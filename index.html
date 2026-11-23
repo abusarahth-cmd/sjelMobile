@@ -653,10 +653,10 @@ body {
             <h2 id="authTitle" class="text-2xl font-black text-slate-800 mb-2">الدخول لنظام الحضور والغياب</h2>
             <p id="authDesc" class="text-slate-500 text-sm mb-5">يرجى إدخال الرقم السري لمتابعة العمل</p>
             
-            <form id="authForm" onsubmit="event.preventDefault(); login(event); return false;" style="pointer-events: auto !important;">
-                <input type="password" id="passInput" required placeholder="أدخل الرقم السري" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault(); login(event); return false;}" class="w-full px-5 py-3.5 rounded-2xl border border-slate-300 text-center text-xl font-bold tracking-widest focus:ring-2 focus:ring-blue-500 focus:outline-none mb-2 shadow-sm transition">
+            <form id="authForm" action="#" onsubmit="event.preventDefault(); window.login(event); return false;" style="pointer-events: auto !important;">
+                <input type="password" id="passInput" required placeholder="أدخل الرقم السري" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault(); window.login(event); return false;}" class="w-full px-5 py-3.5 rounded-2xl border border-slate-300 text-center text-xl font-bold tracking-widest focus:ring-2 focus:ring-blue-500 focus:outline-none mb-2 shadow-sm transition">
                 <div id="authErrorMsg" class="text-xs font-bold text-red-500 min-h-[1.25rem] mb-3 hidden text-center"></div>
-                <button type="button" id="authSubmitBtn" onclick="login(event)" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-2xl transition shadow-lg shadow-blue-500/30 text-lg mb-5 cursor-pointer active:scale-95" style="pointer-events: auto !important;">
+                <button type="button" id="authSubmitBtn" onclick="event.preventDefault(); window.login(event);" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-2xl transition shadow-lg shadow-blue-500/30 text-lg mb-5 cursor-pointer active:scale-95" style="pointer-events: auto !important;">
                     تسجيل الدخول
                 </button>
             </form>
@@ -1970,6 +1970,7 @@ body {
 
             saveToIndexedDB();
             loadSettingsToUI();
+            checkExistingLoginSession();
             updateGenderTerms();
             updateAuthScreenUI();
             initLinkedFolder();
@@ -2425,7 +2426,64 @@ body {
             return result.replace(/[\s\u200B-\u200D\uFEFF]/g, '');
         }
 
-        // دالة التحقق من تسجيل الدخول صراحةً ومطابقة الرقم السري
+        // استرجاع الرقم السري المخزن محلياً في المتصفح دون أي اعتماد على Electron أو Require
+        function getStoredPassword() {
+            // 1. فحص المتغير العام db أولاً
+            if (typeof db !== 'undefined' && db && db.pass && String(db.pass).trim() !== "") {
+                return String(db.pass).trim();
+            }
+            // 2. التحقق المباشر من localStorage في المتصفح (في حال لم ينتهِ تحميل IndexedDB بعد)
+            try {
+                const primaryKey = (typeof getAppStorageKey === 'function') ? getAppStorageKey() : null;
+                if (primaryKey) {
+                    const saved = localStorage.getItem(primaryKey);
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        if (parsed && parsed.pass && String(parsed.pass).trim() !== "") {
+                            return String(parsed.pass).trim();
+                        }
+                    }
+                }
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && (key.startsWith('emp_app_file_') || key.includes('emp_app'))) {
+                        const val = localStorage.getItem(key);
+                        if (val && val.includes('"pass"')) {
+                            const parsed = JSON.parse(val);
+                            if (parsed && parsed.pass && String(parsed.pass).trim() !== "") {
+                                return String(parsed.pass).trim();
+                            }
+                        }
+                    }
+                }
+            } catch(e) {}
+            // 3. الرقم السري الافتراضي المعتمد الأصلي (2129)
+            return (typeof getDefaultPass === 'function') ? getDefaultPass() : "2129";
+        }
+
+        // فحص جلسة تسجيل الدخول السابقة في المتصفح وتخطي شاشة الدخول إذا كان المستخدم مسجلاً
+        function checkExistingLoginSession() {
+            try {
+                if (sessionStorage.getItem('sjel_is_logged_in') === 'true') {
+                    const authScreenEl = document.getElementById('authScreen');
+                    if (authScreenEl) {
+                        authScreenEl.classList.add('hidden');
+                        authScreenEl.style.setProperty('display', 'none', 'important');
+                        authScreenEl.style.setProperty('pointer-events', 'none', 'important');
+                    }
+                    const mainAppEl = document.getElementById('mainApp');
+                    if (mainAppEl) {
+                        mainAppEl.classList.remove('hidden');
+                        mainAppEl.style.setProperty('display', 'flex', 'important');
+                        mainAppEl.style.setProperty('pointer-events', 'auto', 'important');
+                    }
+                    return true;
+                }
+            } catch(e) {}
+            return false;
+        }
+
+        // دالة التحقق من تسجيل الدخول صراحةً ومطابقة الرقم السري محلياً 100%
         function login(e) {
             if (e) {
                 if (typeof e.preventDefault === 'function') e.preventDefault();
@@ -2434,23 +2492,24 @@ body {
 
             const passInputEl = document.getElementById('passInput');
             const errorMsgEl = document.getElementById('authErrorMsg');
-            const rawInput = (passInputEl?.value || '').trim();
+            const rawInput = (passInputEl ? passInputEl.value : '').trim();
             const inputPass = normalizeDigits(rawInput);
 
             if (!inputPass) {
                 if (errorMsgEl) {
-                    errorMsgEl.textContent = "يرجى إدخال الرقم السري!";
+                    errorMsgEl.textContent = "يرجى إدخال الرقم السري";
                     errorMsgEl.classList.remove('hidden');
                     errorMsgEl.style.setProperty('display', 'block', 'important');
+                }
+                if (typeof showAppToast === 'function') {
+                    showAppToast("يرجى إدخال الرقم السري", "warning");
                 }
                 if (passInputEl) passInputEl.focus();
                 return false;
             }
 
-            const rawActivePass = (typeof db !== 'undefined' && db && db.pass && String(db.pass).trim() !== "")
-                ? String(db.pass)
-                : (typeof getDefaultPass === 'function' ? getDefaultPass() : "2129");
-            const activePass = normalizeDigits(rawActivePass);
+            // التحقق المحلي المباشر عبر المتصفح (localStorage / JavaScript)
+            const activePass = normalizeDigits(getStoredPassword());
 
             if (inputPass === activePass) {
                 if (errorMsgEl) {
@@ -2458,6 +2517,12 @@ body {
                     errorMsgEl.classList.add('hidden');
                     errorMsgEl.style.setProperty('display', 'none', 'important');
                 }
+
+                // حفظ حالة الدخول في sessionStorage و localStorage
+                try {
+                    sessionStorage.setItem('sjel_is_logged_in', 'true');
+                    localStorage.setItem('sjel_last_login_time', String(Date.now()));
+                } catch(err) {}
 
                 // إخفاء شاشة تسجيل الدخول وإظهار شاشة البرنامج الرئيسية فوراً
                 const authScreenEl = document.getElementById('authScreen');
@@ -2473,75 +2538,108 @@ body {
                     mainAppEl.style.setProperty('pointer-events', 'auto', 'important');
                 }
 
-                // تهيئة واستدعاء واجهات البرنامج بآمان دون تعطيل الدخول في حال حدوث أي خطأ فرعي
+                // تهيئة واستدعاء واجهات البرنامج بآمان تام دون أي تعليق
                 try { loadSettingsToUI(); } catch(err) { console.warn("خطأ في loadSettingsToUI:", err); }
                 try { updateGenderTerms(); } catch(err) { console.warn("خطأ في updateGenderTerms:", err); }
                 try { renderEmployeesList(); } catch(err) { console.warn("خطأ في renderEmployeesList:", err); }
                 try { updatePastDatesDropdown(); } catch(err) { console.warn("خطأ في updatePastDatesDropdown:", err); }
                 try { addOrLoadDailyRecord(); } catch(err) { console.warn("خطأ في addOrLoadDailyRecord:", err); }
                 try { checkSjelhothorLicense(); } catch(err) { console.warn("خطأ في checkSjelhothorLicense:", err); }
+
                 return false;
             } else {
+                // إشعار عائم وواضح في منتصف الشاشة «الرقم السري غير صحيح»
+                if (typeof showAppToast === 'function') {
+                    showAppToast("الرقم السري غير صحيح", "error");
+                }
                 if (errorMsgEl) {
-                    errorMsgEl.textContent = "الرقم السري غير صحيح، يرجى التأكد والمحاولة مرة أخرى!";
+                    errorMsgEl.textContent = "الرقم السري غير صحيح";
                     errorMsgEl.classList.remove('hidden');
                     errorMsgEl.style.setProperty('display', 'block', 'important');
                 }
-                const passInput = document.getElementById('passInput');
-                if (passInput) {
-                    passInput.value = '';
-                    passInput.focus();
+                if (passInputEl) {
+                    passInputEl.value = '';
+                    passInputEl.focus();
+                    passInputEl.classList.add('ring-2', 'ring-red-500');
+                    setTimeout(() => {
+                        passInputEl.classList.remove('ring-2', 'ring-red-500');
+                    }, 1200);
                 }
                 return false;
             }
         }
 
-        // ربط دوال تسجيل الدخول صراحةً وتثبيتها في النطاق العام window
+        // تثبيت وتصدير دوال تسجيل الدخول في النطاق العام window للوصول المباشر
         function handleAuth(e) { return login(e); }
         function checkPassword(e) { return login(e); }
         window.login = login;
-        window.handleAuth = handleAuth;
-        window.checkPassword = checkPassword;
+        window.handleAuth = login;
+        window.checkPassword = login;
 
-        // ربط صريح لأحداث زر الدخول وحقل الرقم السري ونموذج الدخول
+        // ربط صريح ومباشر لأحداث زر الدخول وحقل الرقم السري ونموذج الدخول (اللمس والنقر والـ Enter)
         function setupLoginListeners() {
             const authBtn = document.getElementById('authSubmitBtn');
             const authFrm = document.getElementById('authForm');
             const passInp = document.getElementById('passInput');
+
             if (authBtn) {
-                authBtn.onclick = function(e) { return login(e); };
+                authBtn.onclick = function(e) {
+                    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+                    return window.login(e);
+                };
+                authBtn.ontouchend = function(e) {
+                    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+                    return window.login(e);
+                };
             }
+
             if (authFrm) {
-                authFrm.onsubmit = function(e) { if(e && e.preventDefault) e.preventDefault(); return login(e); };
+                authFrm.onsubmit = function(e) {
+                    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+                    return window.login(e);
+                };
             }
+
             if (passInp) {
                 passInp.onkeydown = function(e) {
                     if (e.key === 'Enter') {
-                        if (e.preventDefault) e.preventDefault();
-                        return login(e);
+                        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+                        return window.login(e);
                     }
                 };
             }
         }
+
+        // فحص الجلسة وربط الأحداث فور جاهزية المستند
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', setupLoginListeners);
+            document.addEventListener('DOMContentLoaded', () => {
+                setupLoginListeners();
+                checkExistingLoginSession();
+            });
         } else {
             setupLoginListeners();
+            checkExistingLoginSession();
         }
 
         function logout() {
-            // تسجيل الخروج وإعادة شاشة القفل
+            // تسجيل الخروج ومسح الجلسة وإعادة شاشة القفل
+            try {
+                sessionStorage.removeItem('sjel_is_logged_in');
+            } catch(e) {}
             const authScreenEl = document.getElementById('authScreen');
             if (authScreenEl) {
                 authScreenEl.classList.remove('hidden');
                 authScreenEl.style.setProperty('display', 'flex', 'important');
+                authScreenEl.style.setProperty('pointer-events', 'auto', 'important');
             }
             const mainAppEl = document.getElementById('mainApp');
             if (mainAppEl) {
                 mainAppEl.classList.add('hidden');
                 mainAppEl.style.setProperty('display', 'none', 'important');
+                mainAppEl.style.setProperty('pointer-events', 'none', 'important');
             }
-            if (document.getElementById('passInput')) document.getElementById('passInput').value = '';
+            const passInput = document.getElementById('passInput');
+            if (passInput) passInput.value = '';
             updateAuthScreenUI();
 
             // إغلاق البرنامج والنافذة

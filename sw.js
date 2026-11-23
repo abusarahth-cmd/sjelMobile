@@ -3,7 +3,7 @@
  * الإصدار: v1.0
  */
 
-const CACHE_NAME = 'sjel-mobile-v1.0';
+const CACHE_NAME = 'sjel-mobile-v1.1';
 
 const PRECACHE_ASSETS = [
     './',
