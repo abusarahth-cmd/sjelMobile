@@ -186,7 +186,14 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
             padding: 6mm 8mm !important;
             margin: 20px auto !important;
         }
-        /* تكيف حاوية المعاينة مع الجوال دون فرض عرض ثابت */
+        /* شريط أزرار نافذة معاينة الطباعة العلوي مع خلفية داكنة صلبة ومسافة آمنة للنوتش */
+        #inAppPrintPreviewModal header {
+            background-color: #0f172a !important;
+            background: #0f172a !important;
+            padding-top: calc(env(safe-area-inset-top, 20px) + 20px) !important;
+        }
+
+        /* تكيف حاوية المعاينة والجدول مع الجوال دون فرض عرض ثابت مع تمرير أفقي سلس */
         @media (max-width: 768px) {
             #inAppPrintPreviewModal > div {
                 width: 100% !important;
@@ -196,7 +203,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
                 width: 100% !important;
                 max-width: 100% !important;
                 overflow-x: auto !important;
-                -webkit-overflow-scrolling: touch;
+                -webkit-overflow-scrolling: touch !important;
                 padding: 4px 6px !important;
             }
             #inAppPrintPreviewSheet.a4-portrait,
@@ -208,12 +215,20 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
                 padding: 12px 8px !important;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
                 border-radius: 8px !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
             }
             #inAppPrintPreviewSheet table {
+                min-width: 700px !important;
+                white-space: nowrap !important;
                 font-size: 11px !important;
+                table-layout: auto !important;
             }
-            #inAppPrintPreviewSheet th, #inAppPrintPreviewSheet td {
-                padding: 4px 3px !important;
+            #inAppPrintPreviewSheet th, 
+            #inAppPrintPreviewSheet td {
+                padding: 6px 8px !important;
+                white-space: nowrap !important;
+                word-wrap: normal !important;
             }
         }
         #inAppPrintPreviewSheet table {
@@ -516,10 +531,14 @@ body {
     }
 }
 
-/* منع التمدد الأفقي للشاشات الصغيرة */
+/* منع التمدد الأفقي وإصلاح الهامش العلوي الآمن للآيفون */
 html, body {
     max-width: 100vw !important;
     overflow-x: hidden !important;
+}
+
+body {
+    padding-top: max(env(safe-area-inset-top), 24px) !important;
 }
 
 @media (max-width: 768px) {
@@ -736,7 +755,7 @@ html, body {
                 <div class="flex items-center justify-center gap-2 mt-2">
                     <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-black bg-blue-500/20 text-blue-300 border border-blue-400/30 shadow-sm font-mono tracking-wider">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        v1.4
+                        v1.5
                     </span>
                 </div>
                 <p id="appAdminNameDisplay" class="text-xs text-emerald-400 mt-1.5 font-bold hidden"></p>
@@ -779,7 +798,7 @@ html, body {
 
         <!-- المحتوى الرئيسي -->
         <main class="flex-1 p-4 md:p-8 overflow-y-auto">
-            <!-- شريط علوي أنيق للجوال مع شارة رقم الإصدار v1.4 -->
+            <!-- شريط علوي أنيق للجوال مع شارة رقم الإصدار v1.5 -->
             <div class="md:hidden flex items-center justify-between bg-slate-900 text-white px-4 py-2.5 rounded-2xl mb-4 shadow-md border border-slate-800">
                 <div class="flex items-center gap-2.5">
                     <img src="icon.png" alt="أيقونة" class="w-7 h-7 rounded-xl object-contain border border-slate-700/60 shadow-sm">
@@ -790,7 +809,7 @@ html, body {
                 </div>
                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-500/25 text-blue-300 border border-blue-400/40 font-mono tracking-wider shadow-sm">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    v1.4
+                    v1.5
                 </span>
             </div>
 
@@ -1576,7 +1595,7 @@ html, body {
     <div id="inAppPrintPreviewModal" class="no-print" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999999; background: rgba(15, 23, 42, 0.95); overflow-y: auto; display: none; pointer-events: none;">
         <div style="display: flex; flex-direction: column; min-height: 100vh; width: 100%;">
             <!-- شريط أدوات المعاينة العلوي الثابت -->
-            <header style="position: sticky; top: 0; z-index: 1000;" class="flex-shrink-0 bg-slate-900 border-b border-slate-700/80 px-4 sm:px-6 py-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between text-white shadow-xl gap-3">
+            <header style="position: sticky; top: 0; z-index: 1000; background: #0f172a !important; padding-top: calc(env(safe-area-inset-top, 20px) + 20px) !important;" class="flex-shrink-0 border-b border-slate-700/80 px-4 sm:px-6 pb-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between text-white shadow-xl gap-3">
                 <div class="flex items-center gap-2.5">
                     <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-lg sm:text-xl text-blue-400 shrink-0">
                         🖨️
@@ -3681,6 +3700,22 @@ html, body {
             return h * 60 + m;
         }
 
+        function saveEmployeeLiveDelay(empId, delayMins, arrivalTime) {
+            const date = document.getElementById('dailyDate')?.value;
+            if (date && typeof db !== 'undefined' && db && db.attendance) {
+                if (!db.attendance[date]) db.attendance[date] = {};
+                if (!db.attendance[date][empId]) {
+                    db.attendance[date][empId] = { status: 'متأخر', detail: String(delayMins !== undefined && delayMins !== null ? delayMins : '') };
+                } else {
+                    db.attendance[date][empId].status = 'متأخر';
+                    db.attendance[date][empId].detail = String(delayMins !== undefined && delayMins !== null ? delayMins : '');
+                }
+                if (arrivalTime) {
+                    db.attendance[date][empId].arrivalTime = arrivalTime;
+                }
+            }
+        }
+
         function calculateDelayFromTime(empId) {
             const arrEl = document.getElementById(`arrivalTime-${empId}`);
             const detailEl = document.getElementById(`detail-${empId}`);
@@ -3694,11 +3729,12 @@ html, body {
                 const arrMins = parseTimeToMinutes(arrVal);
                 const delayMins = Math.max(0, arrMins - startMins);
                 detailEl.value = delayMins;
+                saveEmployeeLiveDelay(empId, delayMins, arrVal);
             }
             updateDailyStats();
         }
 
-        // حساب وقت الحضور تلقائياً عند إدخال دقائق التأخير يدوياً
+        // حساب وقت الحضور تلقائياً عند إدخال دقائق التأخير يدوياً وحفظها فوراً دون مسح ما يكتبه المستخدم
         function calculateTimeFromDelay(empId) {
             const arrEl = document.getElementById(`arrivalTime-${empId}`);
             const detailEl = document.getElementById(`detail-${empId}`);
@@ -3707,12 +3743,17 @@ html, body {
             const val = detailEl.value;
             if (val !== '' && !isNaN(val)) {
                 const delayMins = parseInt(val, 10);
-                const workStartVal = (arrEl.dataset && arrEl.dataset.workStart) || (db.settings && db.settings.workStartTime) || "07:00";
-                const startMins = parseTimeToMinutes(workStartVal);
-                const totalMins = startMins + delayMins;
-                const h = String(Math.floor(totalMins / 60) % 24).padStart(2, '0');
-                const m = String(totalMins % 60).padStart(2, '0');
-                arrEl.value = `${h}:${m}`;
+                if (!isNaN(delayMins) && delayMins >= 0) {
+                    const workStartVal = (arrEl.dataset && arrEl.dataset.workStart) || (db.settings && db.settings.workStartTime) || "07:00";
+                    const startMins = parseTimeToMinutes(workStartVal);
+                    const totalMins = startMins + delayMins;
+                    const h = String(Math.floor(totalMins / 60) % 24).padStart(2, '0');
+                    const m = String(totalMins % 60).padStart(2, '0');
+                    arrEl.value = `${h}:${m}`;
+                    saveEmployeeLiveDelay(empId, delayMins, `${h}:${m}`);
+                }
+            } else if (val === '') {
+                saveEmployeeLiveDelay(empId, '', arrEl.value);
             }
             updateDailyStats();
         }
@@ -3757,11 +3798,11 @@ html, body {
                         <div class="flex flex-col sm:flex-row items-center gap-2">
                             <div class="w-full sm:w-1/2">
                                 <label class="block text-[10px] font-bold text-slate-500 mb-0.5">وقت الحضور:</label>
-                                <input type="time" id="arrivalTime-${empId}" data-work-start="${effectiveWorkStart}" value="${initialArrivalTime}" onchange="calculateDelayFromTime(${empId})" style="font-size: 16px !important;" class="p-2 border rounded-xl w-full font-bold focus:ring-2 focus:ring-amber-500 outline-none bg-white">
+                                <input type="time" id="arrivalTime-${empId}" data-work-start="${effectiveWorkStart}" value="${initialArrivalTime}" onchange="calculateDelayFromTime(${empId})" oninput="calculateDelayFromTime(${empId})" style="font-size: 16px !important; background-color: #ffffff !important; border: 2px solid #cbd5e1 !important;" class="p-2 rounded-xl w-full font-bold focus:ring-2 focus:ring-amber-500 outline-none text-slate-800 shadow-sm">
                             </div>
                             <div class="w-full sm:w-1/2">
                                 <label class="block text-[10px] font-bold text-slate-500 mb-0.5">دقائق التأخير:</label>
-                                <input type="number" inputmode="numeric" id="detail-${empId}" value="${value !== undefined && value !== null ? value : ''}" oninput="calculateTimeFromDelay(${empId})" placeholder="الدقائق" style="font-size: 16px !important;" class="p-2 border rounded-xl w-full font-bold focus:ring-2 focus:ring-amber-500 outline-none bg-white">
+                                <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="600" id="detail-${empId}" value="${value !== undefined && value !== null ? value : ''}" oninput="calculateTimeFromDelay(${empId})" onchange="calculateTimeFromDelay(${empId})" placeholder="الدقائق" style="font-size: 16px !important; background-color: #ffffff !important; border: 2px solid #cbd5e1 !important;" class="p-2 rounded-xl w-full font-bold focus:ring-2 focus:ring-amber-500 outline-none text-slate-800 shadow-sm">
                             </div>
                         </div>
                         <button type="button" onclick="printLatenessInquiry(${empId})" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm w-full no-print">
