@@ -755,7 +755,7 @@ body {
                 <div class="flex items-center justify-center gap-2 mt-2">
                     <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-black bg-blue-500/20 text-blue-300 border border-blue-400/30 shadow-sm font-mono tracking-wider">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        v1.5
+                        v1.6
                     </span>
                 </div>
                 <p id="appAdminNameDisplay" class="text-xs text-emerald-400 mt-1.5 font-bold hidden"></p>
@@ -798,7 +798,7 @@ body {
 
         <!-- المحتوى الرئيسي -->
         <main class="flex-1 p-4 md:p-8 overflow-y-auto">
-            <!-- شريط علوي أنيق للجوال مع شارة رقم الإصدار v1.5 -->
+            <!-- شريط علوي أنيق للجوال مع شارة رقم الإصدار v1.6 -->
             <div class="md:hidden flex items-center justify-between bg-slate-900 text-white px-4 py-2.5 rounded-2xl mb-4 shadow-md border border-slate-800">
                 <div class="flex items-center gap-2.5">
                     <img src="icon.png" alt="أيقونة" class="w-7 h-7 rounded-xl object-contain border border-slate-700/60 shadow-sm">
@@ -809,7 +809,7 @@ body {
                 </div>
                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-500/25 text-blue-300 border border-blue-400/40 font-mono tracking-wider shadow-sm">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    v1.5
+                    v1.6
                 </span>
             </div>
 
@@ -3713,49 +3713,104 @@ body {
                 if (arrivalTime) {
                     db.attendance[date][empId].arrivalTime = arrivalTime;
                 }
+                // حفظ البيانات في الخلفية دون إعادة رسم الواجهة أو إغلاق لوحة المفاتيح
+                try {
+                    if (typeof saveToLocalStorage === 'function') {
+                        saveToLocalStorage();
+                    }
+                } catch(e) {}
             }
         }
 
-        function calculateDelayFromTime(empId) {
+        // عند كتابة دقائق التأخير يدوياً
+        function onDelayMinutesInput(empId, val) {
             const arrEl = document.getElementById(`arrivalTime-${empId}`);
-            const detailEl = document.getElementById(`detail-${empId}`);
-            if (!arrEl || !detailEl) return;
+            const hEl = document.getElementById(`arrH-${empId}`);
+            const mEl = document.getElementById(`arrM-${empId}`);
+            const effectiveWorkStart = (arrEl && arrEl.dataset && arrEl.dataset.workStart) || (db.settings && db.settings.workStartTime) || "07:00";
 
-            const arrVal = arrEl.value;
-            const workStartVal = (arrEl.dataset && arrEl.dataset.workStart) || (db.settings && db.settings.workStartTime) || "07:00";
-
-            if (arrVal && workStartVal) {
-                const startMins = parseTimeToMinutes(workStartVal);
-                const arrMins = parseTimeToMinutes(arrVal);
-                const delayMins = Math.max(0, arrMins - startMins);
-                detailEl.value = delayMins;
-                saveEmployeeLiveDelay(empId, delayMins, arrVal);
-            }
-            updateDailyStats();
-        }
-
-        // حساب وقت الحضور تلقائياً عند إدخال دقائق التأخير يدوياً وحفظها فوراً دون مسح ما يكتبه المستخدم
-        function calculateTimeFromDelay(empId) {
-            const arrEl = document.getElementById(`arrivalTime-${empId}`);
-            const detailEl = document.getElementById(`detail-${empId}`);
-            if (!arrEl || !detailEl) return;
-
-            const val = detailEl.value;
             if (val !== '' && !isNaN(val)) {
                 const delayMins = parseInt(val, 10);
                 if (!isNaN(delayMins) && delayMins >= 0) {
-                    const workStartVal = (arrEl.dataset && arrEl.dataset.workStart) || (db.settings && db.settings.workStartTime) || "07:00";
-                    const startMins = parseTimeToMinutes(workStartVal);
+                    const startMins = parseTimeToMinutes(effectiveWorkStart);
                     const totalMins = startMins + delayMins;
                     const h = String(Math.floor(totalMins / 60) % 24).padStart(2, '0');
                     const m = String(totalMins % 60).padStart(2, '0');
-                    arrEl.value = `${h}:${m}`;
-                    saveEmployeeLiveDelay(empId, delayMins, `${h}:${m}`);
+                    const timeStr = `${h}:${m}`;
+                    if (arrEl) arrEl.value = timeStr;
+                    if (hEl && document.activeElement !== hEl) hEl.value = h;
+                    if (mEl && document.activeElement !== mEl) mEl.value = m;
+                    saveEmployeeLiveDelay(empId, delayMins, timeStr);
                 }
-            } else if (val === '') {
-                saveEmployeeLiveDelay(empId, '', arrEl.value);
+            } else {
+                saveEmployeeLiveDelay(empId, '', arrEl ? arrEl.value : effectiveWorkStart);
+            }
+            // تحديث الأرقام العلوية فقط دون إعادة رسم قائمة الموظفين
+            updateDailyStats();
+        }
+
+        // عند كتابة أجزاء وقت الحضور (ساعة / دقيقة) يدوياً
+        function onTimePartInput(empId) {
+            const arrEl = document.getElementById(`arrivalTime-${empId}`);
+            const detailEl = document.getElementById(`detail-${empId}`);
+            const hEl = document.getElementById(`arrH-${empId}`);
+            const mEl = document.getElementById(`arrM-${empId}`);
+            if (!hEl || !mEl || !detailEl) return;
+
+            let h = hEl.value.replace(/[^0-9]/g, '');
+            let m = mEl.value.replace(/[^0-9]/g, '');
+            if (h.length > 2) h = h.slice(0, 2);
+            if (m.length > 2) m = m.slice(0, 2);
+
+            const effectiveWorkStart = (arrEl && arrEl.dataset && arrEl.dataset.workStart) || (db.settings && db.settings.workStartTime) || "07:00";
+
+            if (h !== '' && m !== '') {
+                const hNum = Math.min(23, parseInt(h, 10) || 0);
+                const mNum = Math.min(59, parseInt(m, 10) || 0);
+                const timeStr = `${String(hNum).padStart(2, '0')}:${String(mNum).padStart(2, '0')}`;
+                if (arrEl) arrEl.value = timeStr;
+
+                const startMins = parseTimeToMinutes(effectiveWorkStart);
+                const arrMins = parseTimeToMinutes(timeStr);
+                const delayMins = Math.max(0, arrMins - startMins);
+
+                if (document.activeElement !== detailEl) {
+                    detailEl.value = delayMins;
+                }
+                saveEmployeeLiveDelay(empId, delayMins, timeStr);
             }
             updateDailyStats();
+        }
+
+        // عند اختيار الوقت من منتقي الوقت
+        function onStandardTimePickerChange(empId, timeVal) {
+            if (!timeVal) return;
+            const parts = timeVal.split(':');
+            const hEl = document.getElementById(`arrH-${empId}`);
+            const mEl = document.getElementById(`arrM-${empId}`);
+            const detailEl = document.getElementById(`detail-${empId}`);
+            if (hEl) hEl.value = parts[0] || '07';
+            if (mEl) mEl.value = parts[1] || '00';
+
+            const arrEl = document.getElementById(`arrivalTime-${empId}`);
+            const effectiveWorkStart = (arrEl && arrEl.dataset && arrEl.dataset.workStart) || (db.settings && db.settings.workStartTime) || "07:00";
+            const startMins = parseTimeToMinutes(effectiveWorkStart);
+            const arrMins = parseTimeToMinutes(timeVal);
+            const delayMins = Math.max(0, arrMins - startMins);
+
+            if (detailEl) detailEl.value = delayMins;
+            saveEmployeeLiveDelay(empId, delayMins, timeVal);
+            updateDailyStats();
+        }
+
+        // للتوافق مع أي استدعاءات قديمة
+        function calculateDelayFromTime(empId) {
+            const arrEl = document.getElementById(`arrivalTime-${empId}`);
+            if (arrEl) onStandardTimePickerChange(empId, arrEl.value);
+        }
+        function calculateTimeFromDelay(empId) {
+            const detailEl = document.getElementById(`detail-${empId}`);
+            if (detailEl) onDelayMinutesInput(empId, detailEl.value);
         }
 
         // إلغاء تصفية تقرير دقائق التأخير وإعادة ضبط الحقول
@@ -3793,16 +3848,28 @@ body {
                     }
                 }
 
+                let timeParts = initialArrivalTime.split(':');
+                let hVal = timeParts[0] || '07';
+                let mVal = timeParts[1] || '00';
+
                 return `
                     <div class="space-y-1.5 w-full max-w-xs">
                         <div class="flex flex-col sm:flex-row items-center gap-2">
+                            <!-- حقل وقت الحضور مع إدخال رقمي يدوي سريع (ساعة : دقيقة) ومنتقي الوقت -->
                             <div class="w-full sm:w-1/2">
                                 <label class="block text-[10px] font-bold text-slate-500 mb-0.5">وقت الحضور:</label>
-                                <input type="time" id="arrivalTime-${empId}" data-work-start="${effectiveWorkStart}" value="${initialArrivalTime}" onchange="calculateDelayFromTime(${empId})" oninput="calculateDelayFromTime(${empId})" style="font-size: 16px !important; background-color: #ffffff !important; border: 2px solid #cbd5e1 !important;" class="p-2 rounded-xl w-full font-bold focus:ring-2 focus:ring-amber-500 outline-none text-slate-800 shadow-sm">
+                                <div class="flex items-center gap-1 bg-white border-2 border-slate-300 rounded-xl p-1 shadow-sm focus-within:ring-2 focus-within:ring-amber-500">
+                                    <input type="tel" inputmode="numeric" maxlength="2" id="arrH-${empId}" value="${hVal}" oninput="onTimePartInput(${empId})" placeholder="سس" title="الساعة (00-23)" class="w-10 text-center font-bold text-slate-800 outline-none p-0.5 bg-transparent" style="font-size: 16px !important;">
+                                    <span class="font-bold text-slate-400 select-none">:</span>
+                                    <input type="tel" inputmode="numeric" maxlength="2" id="arrM-${empId}" value="${mVal}" oninput="onTimePartInput(${empId})" placeholder="دد" title="الدقيقة (00-59)" class="w-10 text-center font-bold text-slate-800 outline-none p-0.5 bg-transparent" style="font-size: 16px !important;">
+                                    <input type="time" id="arrivalTime-${empId}" data-work-start="${effectiveWorkStart}" value="${initialArrivalTime}" onchange="onStandardTimePickerChange(${empId}, this.value)" class="w-7 h-7 p-0 border-0 outline-none cursor-pointer bg-transparent text-slate-500 shrink-0" title="أو اختر من منتقي الوقت">
+                                </div>
                             </div>
+
+                            <!-- حقل دقائق التأخير رقمي حر يقبل الكتابة اليدوية المباشرة دون مسح -->
                             <div class="w-full sm:w-1/2">
                                 <label class="block text-[10px] font-bold text-slate-500 mb-0.5">دقائق التأخير:</label>
-                                <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="600" id="detail-${empId}" value="${value !== undefined && value !== null ? value : ''}" oninput="calculateTimeFromDelay(${empId})" onchange="calculateTimeFromDelay(${empId})" placeholder="الدقائق" style="font-size: 16px !important; background-color: #ffffff !important; border: 2px solid #cbd5e1 !important;" class="p-2 rounded-xl w-full font-bold focus:ring-2 focus:ring-amber-500 outline-none text-slate-800 shadow-sm">
+                                <input type="tel" inputmode="numeric" pattern="[0-9]*" id="detail-${empId}" value="${value !== undefined && value !== null ? value : ''}" oninput="onDelayMinutesInput(${empId}, this.value)" onchange="onDelayMinutesInput(${empId}, this.value)" placeholder="الدقائق" style="font-size: 16px !important; background-color: #ffffff !important; border: 2px solid #cbd5e1 !important;" class="p-2 rounded-xl w-full font-bold focus:ring-2 focus:ring-amber-500 outline-none text-slate-800 shadow-sm">
                             </div>
                         </div>
                         <button type="button" onclick="printLatenessInquiry(${empId})" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm w-full no-print">
@@ -5026,21 +5093,26 @@ body {
                         ${bodyHtml}
                     </div>
 
-                    <!-- كليشة الاعتماد والتوقيعات بالأسفل -->
+                    <!-- كليشة الاعتماد والتوقيعات بالأسفل (3 أعمدة بترتيب RTL) -->
                     <div style="margin-top: 24px; padding-top: 10px;">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; text-align: center; font-size: 12px; font-weight: bold;">
-                            <!-- الموظف الإداري المسؤول -->
-                            <div style="color: #000000 !important;">
-                                <p style="margin: 0 0 4px 0; font-size: 13px; font-weight: 900; color: #000000 !important;">${adminLabel}</p>
-                                <p style="margin: 0 0 16px 0; color: #000000 !important; font-size: 12px; font-weight: bold;">الاسم: <span id="prtAdminValueText" class="prt-signature-admin" style="font-weight: 900; color: #000000 !important; font-size: 13px;">${adminVal}</span></p>
-                                <p style="margin: 0; font-size: 11px; color: #000000 !important;">التوقيع: ................................................</p>
+                        <div style="display: grid; grid-template-columns: 1.2fr 0.8fr 1.2fr; align-items: center; text-align: center; font-size: 12px; font-weight: bold;">
+                            <!-- العمود الأيمن: الموظف الإداري المسؤول -->
+                            <div style="text-align: right; color: #000000 !important;">
+                                <p style="margin: 0 0 4px 0; font-size: 13px; font-weight: 900; color: #000000 !important;">${adminLabel}: <span id="prtAdminValueText" class="prt-signature-admin" style="font-weight: 900; color: #000000 !important; font-size: 13px;">${adminVal}</span></p>
+                                <p style="margin: 6px 0 0 0; font-size: 11px; color: #000000 !important;">التوقيع: ....................</p>
                             </div>
 
-                            <!-- مدير المدرسة -->
-                            <div style="color: #000000 !important;">
-                                <p style="margin: 0 0 4px 0; font-size: 13px; font-weight: 900; color: #000000 !important;">${managerLabel}</p>
-                                <p style="margin: 0 0 16px 0; color: #000000 !important; font-size: 12px; font-weight: bold;">الاسم: <span id="prtManagerValueText" class="prt-signature-manager" style="font-weight: 900; color: #000000 !important; font-size: 13px;">${managerVal}</span></p>
-                                <p style="margin: 0; font-size: 11px; color: #000000 !important;">التوقيع والختم الرسمي: ................................................</p>
+                            <!-- العمود الأوسط: ختم المدرسة الرسمي -->
+                            <div style="text-align: center; color: #334155 !important;">
+                                <div style="display: inline-block; border: 1.5px dashed #64748b; border-radius: 8px; padding: 10px 14px; font-size: 11px; font-weight: bold;">
+                                    ختم المدرسة الرسمي
+                                </div>
+                            </div>
+
+                            <!-- العمود الأيسر: مدير المدرسة -->
+                            <div style="text-align: left; color: #000000 !important;">
+                                <p style="margin: 0 0 4px 0; font-size: 13px; font-weight: 900; color: #000000 !important;">${managerLabel}: <span id="prtManagerValueText" class="prt-signature-manager" style="font-weight: 900; color: #000000 !important; font-size: 13px;">${managerVal}</span></p>
+                                <p style="margin: 6px 0 0 0; font-size: 11px; color: #000000 !important;">التوقيع: ....................</p>
                             </div>
                         </div>
                     </div>
@@ -5217,196 +5289,236 @@ body {
 
             const isLandscape = (typeof currentPrintOrientation !== 'undefined' && currentPrintOrientation === 'landscape');
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({
-                orientation: isLandscape ? 'landscape' : 'portrait',
-                unit: 'mm',
-                format: 'a4'
-            });
 
-            const pageWidth = isLandscape ? 297 : 210;
-            const pageHeight = isLandscape ? 210 : 297;
-            const rightX = isLandscape ? 282 : 195;
-            const leftX = 15;
-            const centerX = isLandscape ? 148.5 : 105;
-
-            // 1. تحميل خط Amiri العربي المعتمد وحفظه في الكاش المؤقت
-            let fontBase64 = window._cachedAmiriFont;
-            if (!fontBase64) {
-                try {
-                    const fontUrl = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/amiri/Amiri-Regular.ttf';
-                    const fontResp = await fetch(fontUrl);
-                    const fontBuf = await fontResp.arrayBuffer();
-                    fontBase64 = btoa(new Uint8Array(fontBuf).reduce((data, byte) => data + String.fromCharCode(byte), ''));
-                    window._cachedAmiriFont = fontBase64;
-                } catch(e) {
-                    console.warn('Font load error:', e);
-                }
-            }
-
-            if (fontBase64) {
-                try {
-                    doc.addFileToVFS('Amiri-Regular.ttf', fontBase64);
-                    doc.addFont('Amiri-Regular.ttf', 'Amiri', 'normal');
-                    doc.setFont('Amiri');
-                } catch(e) {
-                    console.warn('addFont error:', e);
-                }
-            }
-
-            // 2. استخراج عنوان التقرير وبيانات الكليشة
             let reportTitle = 'تقرير حضور وغياب الموظفين';
             const titleEl = sheet.querySelector('#prtReportTitle, h1, h2, h3, .report-title');
             if (titleEl && titleEl.textContent.trim()) {
                 reportTitle = titleEl.textContent.trim();
             }
+            const safeTitle = reportTitle.replace(/[\s\/\\]+/g, '_');
+            const pdfFileName = `${safeTitle}.pdf`;
 
-            const s = (typeof db !== 'undefined' && db.settings) ? db.settings : {};
-            const eduAdmin = s.eduAdmin || 'وزارة التعليم';
-            const schoolName = s.schoolName || '';
-            const rightLines = [
-                'المملكة العربية السعودية',
-                'وزارة التعليم',
-                eduAdmin ? (eduAdmin.includes('إدارة') ? eduAdmin : 'إدارة التعليم: ' + eduAdmin) : '',
-                schoolName ? (schoolName.includes('مدرسة') ? schoolName : 'المدرسة: ' + schoolName) : ''
-            ].filter(Boolean);
+            // الحل الجذري والنهائي لتعليق AirPrint (...Printing) في طابعات HP/iOS:
+            // تحويل ورقة التقرير بدقة عالية (300 DPI / scale: 3) إلى صورة نظيفة قياسية داخل صفحة jsPDF
+            let pdfBlob = null;
 
-            let leftLines = [];
-            const leftBox = sheet.querySelector('div[style*="text-align: left"], div[style*="text-align:left"], .report-header-left');
-            if (leftBox) {
-                leftLines = Array.from(leftBox.querySelectorAll('p, span')).map(p => p.innerText.trim()).filter(Boolean);
-            }
-            if (!leftLines.length) {
-                const today = new Date().toISOString().split('T')[0];
-                leftLines = ['التاريخ: ' + today, 'المرفقات: لا يوجد'];
-            }
-
-            // 3. رسم الكليشة العلوية الرسمية
-            if (fontBase64) doc.setFont('Amiri');
-
-            // على اليمين
-            let curRightY = 9;
-            rightLines.forEach((line, idx) => {
-                doc.setFontSize(idx === 0 ? 10 : 8.5);
-                doc.text(line, rightX, curRightY, { align: 'right' });
-                curRightY += 5;
-            });
-
-            // على اليسار
-            let curLeftY = 9;
-            leftLines.forEach(line => {
-                doc.setFontSize(8.5);
-                doc.text(line, leftX, curLeftY, { align: 'left' });
-                curLeftY += 5;
-            });
-
-            // رسم الشعار والعنوان بالمنتصف
-            let logoDrawn = false;
-            const previewImg = sheet.querySelector('img');
-            if (previewImg && previewImg.src && !previewImg.src.includes('svg')) {
+            if (typeof html2canvas === 'function') {
                 try {
-                    let imgData = previewImg.src;
-                    if (!imgData.startsWith('data:image/png') && !imgData.startsWith('data:image/jpeg')) {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = previewImg.naturalWidth || 64;
-                        canvas.height = previewImg.naturalHeight || 64;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(previewImg, 0, 0, canvas.width, canvas.height);
-                        imgData = canvas.toDataURL('image/png');
-                    }
-                    doc.addImage(imgData, 'PNG', centerX - 7, 6, 14, 14);
-                    logoDrawn = true;
-                } catch(e) {}
+                    const clone = sheet.cloneNode(true);
+                    clone.style.width = isLandscape ? '297mm' : '210mm';
+                    clone.style.maxWidth = isLandscape ? '297mm' : '210mm';
+                    clone.style.minHeight = isLandscape ? '210mm' : '297mm';
+                    clone.style.padding = isLandscape ? '8mm 10mm' : '10mm 12mm';
+                    clone.style.background = '#ffffff';
+                    clone.style.color = '#000000';
+                    clone.style.position = 'fixed';
+                    clone.style.top = '-9999px';
+                    clone.style.left = '0';
+                    clone.style.zIndex = '-9999';
+                    clone.style.boxShadow = 'none';
+                    clone.style.margin = '0';
+                    clone.style.overflow = 'visible';
+                    document.body.appendChild(clone);
+
+                    const cloneTables = clone.querySelectorAll('table');
+                    cloneTables.forEach(t => {
+                        t.style.width = '100%';
+                        t.style.minWidth = '0';
+                        t.style.tableLayout = 'auto';
+                    });
+
+                    const canvas = await html2canvas(clone, {
+                        scale: 3,
+                        useCORS: true,
+                        logging: false,
+                        allowTaint: true,
+                        backgroundColor: '#ffffff'
+                    });
+
+                    clone.remove();
+
+                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                    const doc = new jsPDF({
+                        orientation: isLandscape ? 'landscape' : 'portrait',
+                        unit: 'mm',
+                        format: 'a4'
+                    });
+
+                    const pageWidth = isLandscape ? 297 : 210;
+                    const pageHeight = isLandscape ? 210 : 297;
+                    doc.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight);
+                    pdfBlob = doc.output('blob');
+                } catch(canvasErr) {
+                    console.warn("html2canvas capture error, falling back to autoTable:", canvasErr);
+                }
             }
 
-            if (!logoDrawn) {
-                doc.setFillColor(15, 23, 42);
-                doc.roundedRect(centerX - 6, 7, 12, 12, 2, 2, 'F');
-                doc.setFontSize(7.5);
-                if (fontBase64) doc.setFont('Amiri');
-                doc.setTextColor(255, 255, 255);
-                doc.text('سجل', centerX, 14.5, { align: 'center' });
-                doc.setTextColor(0, 0, 0);
-            }
+            // البديل البرمجي المباشر عبر autoTable مع التذييل الشفاف ثلاثي الأعمدة
+            if (!pdfBlob) {
+                const doc = new jsPDF({
+                    orientation: isLandscape ? 'landscape' : 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
 
-            doc.setFontSize(12.5);
-            if (fontBase64) doc.setFont('Amiri');
-            doc.text(reportTitle, centerX, 25, { align: 'center' });
+                const pageWidth = isLandscape ? 297 : 210;
+                const pageHeight = isLandscape ? 210 : 297;
+                const rightX = isLandscape ? 282 : 195;
+                const leftX = 15;
+                const centerX = isLandscape ? 148.5 : 105;
 
-            doc.setDrawColor(70, 70, 70);
-            doc.setLineWidth(0.3);
-            doc.line(leftX, 30, rightX, 30);
-
-            // 4. استخراج وبناء الجدول برمجياً عبر autoTable بنظام RTL
-            const table = sheet.querySelector('table');
-            if (table) {
-                const theadRows = Array.from(table.querySelectorAll('thead tr'));
-                let finalHeaders = [];
-                if (theadRows.length > 0) {
-                    const lastTr = theadRows[theadRows.length - 1];
-                    finalHeaders = Array.from(lastTr.children).map(th => th.innerText.trim());
-                } else {
-                    const firstTr = table.querySelector('tr');
-                    if (firstTr) {
-                        finalHeaders = Array.from(firstTr.children).map(c => c.innerText.trim());
-                    }
+                let fontBase64 = window._cachedAmiriFont;
+                if (!fontBase64) {
+                    try {
+                        const fontUrl = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/amiri/Amiri-Regular.ttf';
+                        const fontResp = await fetch(fontUrl);
+                        const fontBuf = await fontResp.arrayBuffer();
+                        fontBase64 = btoa(new Uint8Array(fontBuf).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+                        window._cachedAmiriFont = fontBase64;
+                    } catch(e) {}
                 }
 
-                const headers = finalHeaders.reverse();
-                const rows = Array.from(table.querySelectorAll('tbody tr'))
-                    .filter(tr => tr.offsetParent !== null || tr.querySelectorAll('td').length > 0)
-                    .map(tr => Array.from(tr.children).map(td => td.innerText.trim()).reverse());
+                if (fontBase64) {
+                    try {
+                        doc.addFileToVFS('Amiri-Regular.ttf', fontBase64);
+                        doc.addFont('Amiri-Regular.ttf', 'Amiri', 'normal');
+                        doc.setFont('Amiri');
+                    } catch(e) {}
+                }
+
+                const s = (typeof db !== 'undefined' && db.settings) ? db.settings : {};
+                const eduAdmin = s.eduAdmin || 'وزارة التعليم';
+                const schoolName = s.schoolName || '';
+                const rightLines = [
+                    'المملكة العربية السعودية',
+                    'وزارة التعليم',
+                    eduAdmin ? (eduAdmin.includes('إدارة') ? eduAdmin : 'إدارة التعليم: ' + eduAdmin) : '',
+                    schoolName ? (schoolName.includes('مدرسة') ? schoolName : 'المدرسة: ' + schoolName) : ''
+                ].filter(Boolean);
+
+                let leftLines = [];
+                const leftBox = sheet.querySelector('div[style*="text-align: left"], div[style*="text-align:left"], .report-header-left');
+                if (leftBox) {
+                    leftLines = Array.from(leftBox.querySelectorAll('p, span')).map(p => p.innerText.trim()).filter(Boolean);
+                }
+                if (!leftLines.length) {
+                    const today = new Date().toISOString().split('T')[0];
+                    leftLines = ['التاريخ: ' + today, 'المرفقات: لا يوجد'];
+                }
+
+                if (fontBase64) doc.setFont('Amiri');
+
+                let curRightY = 9;
+                rightLines.forEach((line, idx) => {
+                    doc.setFontSize(idx === 0 ? 10 : 8.5);
+                    doc.text(line, rightX, curRightY, { align: 'right' });
+                    curRightY += 5;
+                });
+
+                let curLeftY = 9;
+                leftLines.forEach(line => {
+                    doc.setFontSize(8.5);
+                    doc.text(line, leftX, curLeftY, { align: 'left' });
+                    curLeftY += 5;
+                });
+
+                doc.setFontSize(12.5);
+                if (fontBase64) doc.setFont('Amiri');
+                doc.text(reportTitle, centerX, 25, { align: 'center' });
+
+                doc.setDrawColor(70, 70, 70);
+                doc.setLineWidth(0.3);
+                doc.line(leftX, 30, rightX, 30);
+
+                const table = sheet.querySelector('table');
+                if (table) {
+                    const theadRows = Array.from(table.querySelectorAll('thead tr'));
+                    let finalHeaders = [];
+                    if (theadRows.length > 0) {
+                        const lastTr = theadRows[theadRows.length - 1];
+                        finalHeaders = Array.from(lastTr.children).map(th => th.innerText.trim());
+                    } else {
+                        const firstTr = table.querySelector('tr');
+                        if (firstTr) {
+                            finalHeaders = Array.from(firstTr.children).map(c => c.innerText.trim());
+                        }
+                    }
+
+                    const headers = finalHeaders.reverse();
+                    const rows = Array.from(table.querySelectorAll('tbody tr'))
+                        .filter(tr => tr.offsetParent !== null || tr.querySelectorAll('td').length > 0)
+                        .map(tr => Array.from(tr.children).map(td => td.innerText.trim()).reverse());
+
+                    doc.autoTable({
+                        head: headers.length ? [headers] : undefined,
+                        body: rows,
+                        startY: 34,
+                        styles: {
+                            font: fontBase64 ? 'Amiri' : undefined,
+                            fontStyle: 'normal',
+                            halign: 'center',
+                            valign: 'middle',
+                            fontSize: isLandscape ? 8.5 : 9,
+                            cellPadding: 1.8,
+                            lineWidth: 0.2,
+                            lineColor: [0, 0, 0],
+                            textColor: [0, 0, 0]
+                        },
+                        headStyles: {
+                            fillColor: [240, 243, 246],
+                            textColor: [0, 0, 0],
+                            fontStyle: 'bold'
+                        },
+                        theme: 'grid'
+                    });
+                }
+
+                // 1. بناء التذييل أسفل الجدول باستخدام doc.autoTable بجدول شفاف من 3 أعمدة
+                const terms = (typeof getGenderTerms === 'function') ? getGenderTerms() : { adminTerm: 'الموظف الإداري المسؤول', managerTerm: 'مدير المدرسة' };
+                const finalAdminName = (db.settings && db.settings.adminName && db.settings.adminName.trim()) || (document.getElementById('setAdminName')?.value?.trim() || '');
+                const finalManagerName = (db.settings && db.settings.managerName && db.settings.managerName.trim()) || (document.getElementById('setManagerName')?.value?.trim() || '');
+
+                const adminColText = (terms.adminTerm || 'الموظف الإداري المسؤول') + ': ' + (finalAdminName || '....................') + '\nالتوقيع: ....................';
+                const centerColText = 'ختم المدرسة الرسمي';
+                const managerColText = (terms.managerTerm || 'مدير المدرسة') + ': ' + (finalManagerName || '....................') + '\nالتوقيع: ....................';
+
+                // العمود 0 في اليسار (مدير المدرسة)، العمود 1 بالوسط (الختم)، العمود 2 في اليمين (الموظف الإداري)
+                const footerTableData = [
+                    [managerColText, centerColText, adminColText]
+                ];
+
+                let startFooterY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : (isLandscape ? 175 : 255);
+                if (startFooterY > (isLandscape ? 185 : 265)) {
+                    doc.addPage();
+                    startFooterY = 25;
+                }
 
                 doc.autoTable({
-                    head: headers.length ? [headers] : undefined,
-                    body: rows,
-                    startY: 34,
+                    body: footerTableData,
+                    startY: startFooterY,
+                    theme: 'plain',
                     styles: {
                         font: fontBase64 ? 'Amiri' : undefined,
-                        fontStyle: 'normal',
-                        halign: 'center',
-                        valign: 'middle',
-                        fontSize: isLandscape ? 8.5 : 9,
-                        cellPadding: 1.8,
-                        lineWidth: 0.2,
-                        lineColor: [0, 0, 0],
-                        textColor: [0, 0, 0]
-                    },
-                    headStyles: {
-                        fillColor: [240, 243, 246],
+                        fontSize: 9.5,
+                        cellPadding: 2,
+                        lineWidth: 0,
+                        lineColor: [255, 255, 255],
                         textColor: [0, 0, 0],
-                        fontStyle: 'bold'
+                        valign: 'middle'
                     },
-                    theme: 'grid'
+                    columnStyles: {
+                        0: { halign: 'left', cellWidth: isLandscape ? 90 : 65 },
+                        1: { halign: 'center', cellWidth: isLandscape ? 87 : 50 },
+                        2: { halign: 'right', cellWidth: isLandscape ? 90 : 65 }
+                    },
+                    tableWidth: isLandscape ? 267 : 180,
+                    margin: { left: 15, right: 15 }
                 });
+
+                pdfBlob = doc.output('blob');
             }
 
-            // 5. رسم التذييل والتوقيعات الرسمية
-            const terms = (typeof getGenderTerms === 'function') ? getGenderTerms() : { adminTerm: 'المساعد الإداري', managerTerm: 'مدير المدرسة' };
-            const finalAdminName = (db.settings && db.settings.adminName && db.settings.adminName.trim()) || (document.getElementById('setAdminName')?.value?.trim() || '');
-            const finalManagerName = (db.settings && db.settings.managerName && db.settings.managerName.trim()) || (document.getElementById('setManagerName')?.value?.trim() || '');
-
-            let footerY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 12 : (isLandscape ? 175 : 255);
-            const maxY = isLandscape ? 185 : 265;
-            if (footerY > maxY) {
-                doc.addPage();
-                footerY = 25;
-            }
-
-            doc.setFontSize(9.5);
-            if (fontBase64) doc.setFont('Amiri');
-
-            doc.text((terms.adminTerm || 'المساعد الإداري') + ': ' + (finalAdminName || '....................'), rightX, footerY, { align: 'right' });
-            doc.text('التوقيع: ....................', rightX, footerY + 6, { align: 'right' });
-
-            doc.text('ختم المدرسة الرسمي', centerX, footerY + 3, { align: 'center' });
-
-            doc.text((terms.managerTerm || 'مدير المدرسة') + ': ' + (finalManagerName || '....................'), leftX, footerY, { align: 'left' });
-            doc.text('التوقيع: ....................', leftX, footerY + 6, { align: 'left' });
-
-            // 6. التحويل إلى ملف PDF ومشاركته عبر نافذة المشاركة الأصلية (AirPrint)
-            const pdfBlob = doc.output('blob');
-            const safeTitle = (reportTitle || 'تقرير_الحضور').replace(/[\s\/\\]+/g, '_');
-            const pdfFileName = `${safeTitle}.pdf`;
+            // إرسال الملف إلى نافذة المشاركة الرسمية (AirPrint)
             const pdfFile = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
 
             if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
@@ -5423,8 +5535,15 @@ body {
                 }
             }
 
-            doc.save(pdfFileName);
-            showAppToast("✅ تم تنزيل ملف الـ PDF بنجاح!", "success");
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.href = blobUrl;
+            downloadAnchor.download = pdfFileName;
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+            showAppToast("✅ تم تجهيز وتنزيل ملف الـ PDF بنجاح!", "success");
         }
 
         window.isIOSDevice = isIOSDevice;
