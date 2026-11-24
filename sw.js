@@ -1,9 +1,9 @@
 /**
  * Service Worker for سجل حضور وغياب الموظفين الاحترافي (sjel-mobile)
- * الإصدار: v1.3
+ * الإصدار: v1.4
  */
 
-const CACHE_NAME = 'sjel-v1.3';
+const CACHE_NAME = 'sjel-v1.4';
 
 const PRECACHE_ASSETS = [
     './',
@@ -16,7 +16,8 @@ const PRECACHE_ASSETS = [
     './apple-touch-icon.png',
     'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
     'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
+    'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+    'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/amiri/Amiri-Regular.ttf',
 ];
 
 // حدث التثبيت: تحميل الأصول الأساسية في الكاش والتفعيل الفوري

@@ -7,7 +7,7 @@
         window.electronAPI = window.electronAPI || null;
     </script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>سجل حضور وغياب الموظفين الاحترافي</title>
 
     <!-- وسوم PWA وتوافق أجهزة Apple (iOS & iPadOS) والأندرويد -->
@@ -185,6 +185,36 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
             min-height: 210mm !important;
             padding: 6mm 8mm !important;
             margin: 20px auto !important;
+        }
+        /* تكيف حاوية المعاينة مع الجوال دون فرض عرض ثابت */
+        @media (max-width: 768px) {
+            #inAppPrintPreviewModal > div {
+                width: 100% !important;
+                max-width: 100vw !important;
+            }
+            .preview-sheet-scroll-wrap {
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch;
+                padding: 4px 6px !important;
+            }
+            #inAppPrintPreviewSheet.a4-portrait,
+            #inAppPrintPreviewSheet.a4-landscape {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: auto !important;
+                margin: 10px auto !important;
+                padding: 12px 8px !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+                border-radius: 8px !important;
+            }
+            #inAppPrintPreviewSheet table {
+                font-size: 11px !important;
+            }
+            #inAppPrintPreviewSheet th, #inAppPrintPreviewSheet td {
+                padding: 4px 3px !important;
+            }
         }
         #inAppPrintPreviewSheet table {
             table-layout: fixed !important;
@@ -486,43 +516,60 @@ body {
     }
 }
 
+/* منع التمدد الأفقي للشاشات الصغيرة */
+html, body {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+}
+
+@media (max-width: 768px) {
+    .filter-bar-responsive,
+    .btn-bar-responsive {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+}
+
 /* نافذة الإشعارات العائمة الاحترافية أعلى منتصف الشاشة */
 #appToastContainer {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 9999999;
-    pointer-events: none;
-    width: max-content;
-    max-width: 92vw;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: center;
+    position: fixed !important;
+    top: calc(env(safe-area-inset-top, 20px) + 55px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 9999999 !important;
+    pointer-events: none !important;
+    width: max-content !important;
+    max-width: 90vw !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    align-items: center !important;
 }
 
 .app-toast-item {
-    pointer-events: auto;
-    background: rgba(15, 23, 42, 0.95);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 16px;
-    padding: 12px 20px;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 1.5;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(8px);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    animation: toastSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: right;
-    direction: rtl;
-    white-space: pre-line;
+    pointer-events: auto !important;
+    background: #0f172a !important;
+    color: #ffffff !important;
+    border: 2px solid #38bdf8 !important;
+    border-radius: 16px !important;
+    padding: 12px 20px !important;
+    font-size: 15px !important;
+    font-weight: bold !important;
+    line-height: 1.5 !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    animation: toastSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    text-align: center !important;
+    direction: rtl !important;
+    white-space: pre-line !important;
+    max-width: 90vw !important;
+    z-index: 999999 !important;
 }
 .app-toast-item.success {
     border-color: #10b981;
@@ -689,7 +736,7 @@ body {
                 <div class="flex items-center justify-center gap-2 mt-2">
                     <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-black bg-blue-500/20 text-blue-300 border border-blue-400/30 shadow-sm font-mono tracking-wider">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        v1.3
+                        v1.4
                     </span>
                 </div>
                 <p id="appAdminNameDisplay" class="text-xs text-emerald-400 mt-1.5 font-bold hidden"></p>
@@ -732,7 +779,7 @@ body {
 
         <!-- المحتوى الرئيسي -->
         <main class="flex-1 p-4 md:p-8 overflow-y-auto">
-            <!-- شريط علوي أنيق للجوال مع شارة رقم الإصدار v1.3 -->
+            <!-- شريط علوي أنيق للجوال مع شارة رقم الإصدار v1.4 -->
             <div class="md:hidden flex items-center justify-between bg-slate-900 text-white px-4 py-2.5 rounded-2xl mb-4 shadow-md border border-slate-800">
                 <div class="flex items-center gap-2.5">
                     <img src="icon.png" alt="أيقونة" class="w-7 h-7 rounded-xl object-contain border border-slate-700/60 shadow-sm">
@@ -743,7 +790,7 @@ body {
                 </div>
                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-500/25 text-blue-300 border border-blue-400/40 font-mono tracking-wider shadow-sm">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    v1.3
+                    v1.4
                 </span>
             </div>
 
@@ -964,31 +1011,50 @@ body {
 
             <!-- تبويب دقائق التأخير -->
             <section id="sec-delays" class="tab-content hidden space-y-6">
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div>
-                        <h2 class="text-xl font-bold text-slate-800">تقرير مجموع دقائق التأخير التراكمي</h2>
-                        <p class="text-xs text-slate-500 mt-1">يحسب تلقائياً الدقائق المسجلة لحالات (متأخر) فقط ويستثني باقي الحالات</p>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-3">
-                        <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-200 text-xs font-bold">
-                            <span class="text-slate-500">🗓️ من:</span>
-                            <input type="date" id="delayFilterFrom" onchange="renderDelaysLog()" class="p-1.5 border rounded-xl bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                            <span class="text-slate-500">إلى:</span>
-                            <input type="date" id="delayFilterTo" onchange="renderDelaysLog()" class="p-1.5 border rounded-xl bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                            <select id="delayYearGregorianSelect" onchange="filterDelaysByGregorianYear(this.value)" class="p-1.5 border rounded-xl bg-white text-slate-800 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer">
-                                <option value="">📅 سنة ميلادية</option>
-                            </select>
-                            <select id="delayYearHijriSelect" onchange="filterDelaysByHijriYear(this.value)" class="p-1.5 border rounded-xl bg-white text-slate-800 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer">
-                                <option value="">🌙 سنة هجرية</option>
-                            </select>
-                            <button onclick="document.getElementById('delayFilterFrom').value=''; document.getElementById('delayFilterTo').value=''; renderDelaysLog();" class="text-slate-400 hover:text-red-500 px-1 font-bold text-sm" title="إلغاء تصفية التاريخ">✕</button>
+                <div class="bg-white p-4 sm:p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col gap-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                        <div>
+                            <h2 class="text-lg sm:text-xl font-bold text-slate-800">تقرير مجموع دقائق التأخير التراكمي</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">يحسب تلقائياً الدقائق المسجلة لحالات (متأخر) فقط ويستثني باقي الحالات</p>
                         </div>
-                        <button onclick="exportDelaysToExcel()" class="no-print bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-2xl font-bold flex items-center gap-2 shadow-md shadow-emerald-500/20 text-xs">
-                            <span>📊</span> <span>تصدير إكسل</span>
-                        </button>
-                        <button onclick="printDelaysReport()" class="no-print bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-2xl font-bold flex items-center gap-2 text-xs">
-                            <span>🖨️</span> <span>طباعة التقرير</span>
-                        </button>
+                    </div>
+
+                    <!-- شريط فلاتر متجاوب بدقة لجميع الشاشات دون قص جانبي -->
+                    <div class="flex flex-wrap items-center gap-2.5 p-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs font-bold w-full">
+                        <div class="flex items-center gap-1.5 flex-1 min-w-[130px]">
+                            <span class="text-slate-500 shrink-0">📅 السنة:</span>
+                            <select id="delayYearGregorianSelect" onchange="filterDelaysByGregorianYear(this.value)" class="p-2 border rounded-xl bg-white text-slate-800 font-bold w-full outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer">
+                                <option value="">كل السنوات</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-1 min-w-[135px]">
+                            <span class="text-slate-500 shrink-0">من:</span>
+                            <input type="date" id="delayFilterFrom" onchange="renderDelaysLog()" class="p-2 border rounded-xl bg-white text-slate-800 font-bold w-full outline-none focus:ring-2 focus:ring-amber-500">
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-1 min-w-[135px]">
+                            <span class="text-slate-500 shrink-0">إلى:</span>
+                            <input type="date" id="delayFilterTo" onchange="renderDelaysLog()" class="p-2 border rounded-xl bg-white text-slate-800 font-bold w-full outline-none focus:ring-2 focus:ring-amber-500">
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-1 min-w-[155px]">
+                            <span class="text-slate-500 shrink-0">👤 الموظف:</span>
+                            <select id="delayFilterEmp" onchange="renderDelaysLog()" class="p-2 border rounded-xl bg-white text-slate-800 font-bold w-full outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer">
+                                <option value="ALL">جميع الموظفين</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0 w-full sm:w-auto mt-1 sm:mt-0">
+                            <button type="button" onclick="renderDelaysLog()" class="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold transition shadow-sm active:scale-95 flex items-center gap-1">
+                                🔍 تصفية
+                            </button>
+                            <button type="button" onclick="resetDelayFilters()" class="px-3 py-2 bg-white text-slate-600 hover:text-red-600 border border-slate-300 rounded-xl font-bold transition shadow-sm active:scale-95 flex items-center gap-1">
+                                ✕ إلغاء
+                            </button>
+                            <button type="button" onclick="printDelaysReport()" class="no-print bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 rounded-xl font-bold flex items-center gap-1.5 text-xs shadow-sm active:scale-95">
+                                <span>🖨️</span> <span>طباعة التقرير</span>
+                            </button>
+                            <button type="button" onclick="exportDelaysToExcel()" class="no-print bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-bold flex items-center gap-1.5 text-xs shadow-sm active:scale-95">
+                                <span>📊</span> <span>تصدير إكسل</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -1510,39 +1576,39 @@ body {
     <div id="inAppPrintPreviewModal" class="no-print" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999999; background: rgba(15, 23, 42, 0.95); overflow-y: auto; display: none; pointer-events: none;">
         <div style="display: flex; flex-direction: column; min-height: 100vh; width: 100%;">
             <!-- شريط أدوات المعاينة العلوي الثابت -->
-            <header style="position: sticky; top: 0; z-index: 1000;" class="flex-shrink-0 bg-slate-900 border-b border-slate-700/80 px-6 py-3.5 flex items-center justify-between text-white shadow-xl">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-xl text-blue-400">
+            <header style="position: sticky; top: 0; z-index: 1000;" class="flex-shrink-0 bg-slate-900 border-b border-slate-700/80 px-4 sm:px-6 py-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between text-white shadow-xl gap-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-lg sm:text-xl text-blue-400 shrink-0">
                         🖨️
                     </div>
                     <div>
-                        <h3 class="font-bold text-base text-slate-100 flex items-center gap-2">
+                        <h3 class="font-bold text-sm sm:text-base text-slate-100 flex items-center gap-2">
                             <span>معاينة التقرير قبل الطباعة</span>
-                            <span id="previewOrientationBadge" class="text-xs bg-slate-800 text-blue-300 font-semibold px-2.5 py-0.5 rounded-full border border-slate-700">
+                            <span id="previewOrientationBadge" class="text-[10px] sm:text-xs bg-slate-800 text-blue-300 font-semibold px-2 py-0.5 rounded-full border border-slate-700">
                                 A4 عمودي (Portrait)
                             </span>
                         </h3>
-                        <p class="text-xs text-slate-400">معاينة داخلية تفاعلية مطابقة تماماً لشكل ورقة الطباعة (A4)</p>
+                        <p class="text-[11px] sm:text-xs text-slate-400 hidden sm:block">معاينة داخلية تفاعلية مطابقة تماماً لشكل ورقة الطباعة (A4)</p>
                     </div>
                 </div>
 
-                <!-- أزرار الإجراءات في شريط المعاينة -->
-                <div class="flex items-center gap-3 flex-wrap">
-                    <button type="button" id="closePrintPreviewBtn" onclick="closePrintPreviewModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs sm:text-sm transition flex items-center gap-1.5 active:scale-95 shadow-sm">
-                        <span>✕</span>
-                        <span>إغلاق المعاينة والعودة</span>
+                <!-- أزرار الإجراءات في شريط المعاينة (مرتبة في صفين متناسقين على الجوال) -->
+                <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <button type="button" id="sendToPrinterBtn" onclick="sendToPhysicalPrinter()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/30 active:scale-95 w-full sm:w-auto">
+                        <span>🖨️</span>
+                        <span>طباعة</span>
                     </button>
-                    <button type="button" id="saveWordBtn" onclick="exportCurrentPreviewToWord()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs sm:text-sm transition flex items-center gap-2 shadow-lg shadow-indigo-600/30 active:scale-95" title="تصدير وحفظ المساءلة أو التقرير كملف Word منسق (.doc)">
-                        <span>📝</span>
-                        <span>تصدير Word</span>
-                    </button>
-                    <button type="button" id="savePdfPortableBtn" onclick="exportCurrentPreviewToPdf()" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm transition flex items-center gap-2 shadow-lg shadow-blue-600/30 active:scale-95" title="تصدير وحفظ المساءلة أو التقرير بصيغة PDF">
+                    <button type="button" id="savePdfPortableBtn" onclick="exportCurrentPreviewToPdf()" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm transition flex items-center justify-center gap-1.5 shadow-lg shadow-blue-600/30 active:scale-95 w-full sm:w-auto" title="تصدير وحفظ المساءلة أو التقرير بصيغة PDF">
                         <span>💾</span>
                         <span>تصدير PDF</span>
                     </button>
-                    <button type="button" id="sendToPrinterBtn" onclick="sendToPhysicalPrinter()" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition flex items-center gap-2 shadow-lg shadow-emerald-600/30 active:scale-95">
-                        <span>🖨️</span>
-                        <span>طباعة</span>
+                    <button type="button" id="saveWordBtn" onclick="exportCurrentPreviewToWord()" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs sm:text-sm transition flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-600/30 active:scale-95 w-full sm:w-auto" title="تصدير وحفظ المساءلة أو التقرير كملف Word منسق (.doc)">
+                        <span>📝</span>
+                        <span>تصدير Word</span>
+                    </button>
+                    <button type="button" id="closePrintPreviewBtn" onclick="closePrintPreviewModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs sm:text-sm transition flex items-center justify-center gap-1.5 active:scale-95 shadow-sm w-full sm:w-auto">
+                        <span>✕</span>
+                        <span>عودة</span>
                     </button>
                 </div>
             </header>
@@ -2313,16 +2379,6 @@ body {
                 if (delayFrom && !delayFrom.value) delayFrom.value = `${currentGreg}-01-01`;
                 if (delayTo && !delayTo.value) delayTo.value = `${currentGreg}-12-31`;
             }
-
-            const delayHSelect = document.getElementById('delayYearHijriSelect');
-            if (delayHSelect) {
-                let html = '<option value="">🌙 كل السنوات</option>';
-                sortedHijriYears.forEach(y => {
-                    const isCurr = (y === currentHijri);
-                    html += `<option value="${y}">عام ${y}هـ${isCurr ? ' (الحالية)' : ''}</option>`;
-                });
-                delayHSelect.innerHTML = html;
-            }
         }
 
         function onDailyYearQuickSelect(val) {
@@ -2393,8 +2449,7 @@ body {
         }
 
         function filterDelaysByGregorianYear(year) {
-            const delayH = document.getElementById('delayYearHijriSelect');
-            if (delayH) delayH.value = '';
+            
             const from = document.getElementById('delayFilterFrom');
             const to = document.getElementById('delayFilterTo');
             if (year) {
@@ -3643,6 +3698,38 @@ body {
             updateDailyStats();
         }
 
+        // حساب وقت الحضور تلقائياً عند إدخال دقائق التأخير يدوياً
+        function calculateTimeFromDelay(empId) {
+            const arrEl = document.getElementById(`arrivalTime-${empId}`);
+            const detailEl = document.getElementById(`detail-${empId}`);
+            if (!arrEl || !detailEl) return;
+
+            const val = detailEl.value;
+            if (val !== '' && !isNaN(val)) {
+                const delayMins = parseInt(val, 10);
+                const workStartVal = (arrEl.dataset && arrEl.dataset.workStart) || (db.settings && db.settings.workStartTime) || "07:00";
+                const startMins = parseTimeToMinutes(workStartVal);
+                const totalMins = startMins + delayMins;
+                const h = String(Math.floor(totalMins / 60) % 24).padStart(2, '0');
+                const m = String(totalMins % 60).padStart(2, '0');
+                arrEl.value = `${h}:${m}`;
+            }
+            updateDailyStats();
+        }
+
+        // إلغاء تصفية تقرير دقائق التأخير وإعادة ضبط الحقول
+        function resetDelayFilters() {
+            const fromEl = document.getElementById('delayFilterFrom');
+            const toEl = document.getElementById('delayFilterTo');
+            const yearEl = document.getElementById('delayYearGregorianSelect');
+            const empEl = document.getElementById('delayFilterEmp');
+            if (fromEl) fromEl.value = '';
+            if (toEl) toEl.value = '';
+            if (yearEl) yearEl.value = '';
+            if (empEl) empEl.value = 'ALL';
+            renderDelaysLog();
+        }
+
         function getDetailInputHTML(empId, status, value, rec = null) {
             if (status === 'متأخر') {
                 const effectiveWorkStart = (rec && rec.workStartTime) || (db.settings && db.settings.workStartTime) || "07:00";
@@ -3670,11 +3757,11 @@ body {
                         <div class="flex flex-col sm:flex-row items-center gap-2">
                             <div class="w-full sm:w-1/2">
                                 <label class="block text-[10px] font-bold text-slate-500 mb-0.5">وقت الحضور:</label>
-                                <input type="time" id="arrivalTime-${empId}" data-work-start="${effectiveWorkStart}" value="${initialArrivalTime}" onchange="calculateDelayFromTime(${empId})" class="p-2 border rounded-xl w-full font-medium focus:ring-2 focus:ring-amber-500 outline-none text-xs bg-white">
+                                <input type="time" id="arrivalTime-${empId}" data-work-start="${effectiveWorkStart}" value="${initialArrivalTime}" onchange="calculateDelayFromTime(${empId})" style="font-size: 16px !important;" class="p-2 border rounded-xl w-full font-bold focus:ring-2 focus:ring-amber-500 outline-none bg-white">
                             </div>
                             <div class="w-full sm:w-1/2">
                                 <label class="block text-[10px] font-bold text-slate-500 mb-0.5">دقائق التأخير:</label>
-                                <input type="number" id="detail-${empId}" value="${value !== undefined && value !== null ? value : ''}" oninput="updateDailyStats()" placeholder="دقائق التأخير" class="p-2 border rounded-xl w-full font-medium focus:ring-2 focus:ring-amber-500 outline-none text-xs bg-white">
+                                <input type="number" inputmode="numeric" id="detail-${empId}" value="${value !== undefined && value !== null ? value : ''}" oninput="calculateTimeFromDelay(${empId})" placeholder="الدقائق" style="font-size: 16px !important;" class="p-2 border rounded-xl w-full font-bold focus:ring-2 focus:ring-amber-500 outline-none bg-white">
                             </div>
                         </div>
                         <button type="button" onclick="printLatenessInquiry(${empId})" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm w-full no-print">
@@ -4576,11 +4663,25 @@ body {
         function renderDelaysLog() {
             const from = document.getElementById('delayFilterFrom') ? document.getElementById('delayFilterFrom').value : '';
             const to = document.getElementById('delayFilterTo') ? document.getElementById('delayFilterTo').value : '';
+            const empFilter = document.getElementById('delayFilterEmp') ? document.getElementById('delayFilterEmp').value : 'ALL';
             const tbody = document.getElementById('delaysLogBody');
+            if (!tbody) return;
             tbody.innerHTML = '';
+
+            // تحديث قائمة الموظفين في الفلتر إذا لم تكن معبأة
+            const delayEmpSelect = document.getElementById('delayFilterEmp');
+            if (delayEmpSelect && delayEmpSelect.options.length <= 1 && db.employees && db.employees.length > 0) {
+                let opts = '<option value="ALL">جميع الموظفين</option>';
+                db.employees.forEach(e => {
+                    opts += `<option value="${e.id}">${e.name}</option>`;
+                });
+                delayEmpSelect.innerHTML = opts;
+                delayEmpSelect.value = empFilter;
+            }
 
             let countIndex = 0;
             db.employees.forEach((emp) => {
+                if (empFilter !== 'ALL' && String(emp.id) !== String(empFilter)) return;
                 let totalMinutes = 0;
                 let count = 0;
 
@@ -5052,7 +5153,249 @@ body {
         }
 
         // إرسال أمر الطباعة الفعلي للطابعة حصراً من داخل المعاينة
+        
+        // التحقق من أجهزة Apple (iOS / iPadOS) بدقة
+        function isIOSDevice() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        }
+
+        // توليد ملف PDF ومشاركته على أجهزة iOS/iPadOS باستخدام jsPDF + AutoTable مع خط Amiri العربي للطباعة المباشرة (AirPrint)
+        async function generateAndSharePdf() {
+            const sheet = document.getElementById('inAppPrintPreviewSheet') || document.getElementById('printArea');
+            if (!sheet || !sheet.innerHTML.trim()) {
+                showAppToast("⚠️ لا يوجد محتوى تقرير متاح للطباعة!", "warning");
+                return;
+            }
+
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                showAppToast("⚠️ جاري تحميل مكتبة PDF، يرجى الانتظار ثوانٍ...", "warning");
+                return;
+            }
+
+            showAppToast("⏳ جاري تجهيز التقرير للطباعة عبر AirPrint والمشاركة...", "info", 3500);
+
+            const isLandscape = (typeof currentPrintOrientation !== 'undefined' && currentPrintOrientation === 'landscape');
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: isLandscape ? 'landscape' : 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const pageWidth = isLandscape ? 297 : 210;
+            const pageHeight = isLandscape ? 210 : 297;
+            const rightX = isLandscape ? 282 : 195;
+            const leftX = 15;
+            const centerX = isLandscape ? 148.5 : 105;
+
+            // 1. تحميل خط Amiri العربي المعتمد وحفظه في الكاش المؤقت
+            let fontBase64 = window._cachedAmiriFont;
+            if (!fontBase64) {
+                try {
+                    const fontUrl = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/amiri/Amiri-Regular.ttf';
+                    const fontResp = await fetch(fontUrl);
+                    const fontBuf = await fontResp.arrayBuffer();
+                    fontBase64 = btoa(new Uint8Array(fontBuf).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+                    window._cachedAmiriFont = fontBase64;
+                } catch(e) {
+                    console.warn('Font load error:', e);
+                }
+            }
+
+            if (fontBase64) {
+                try {
+                    doc.addFileToVFS('Amiri-Regular.ttf', fontBase64);
+                    doc.addFont('Amiri-Regular.ttf', 'Amiri', 'normal');
+                    doc.setFont('Amiri');
+                } catch(e) {
+                    console.warn('addFont error:', e);
+                }
+            }
+
+            // 2. استخراج عنوان التقرير وبيانات الكليشة
+            let reportTitle = 'تقرير حضور وغياب الموظفين';
+            const titleEl = sheet.querySelector('#prtReportTitle, h1, h2, h3, .report-title');
+            if (titleEl && titleEl.textContent.trim()) {
+                reportTitle = titleEl.textContent.trim();
+            }
+
+            const s = (typeof db !== 'undefined' && db.settings) ? db.settings : {};
+            const eduAdmin = s.eduAdmin || 'وزارة التعليم';
+            const schoolName = s.schoolName || '';
+            const rightLines = [
+                'المملكة العربية السعودية',
+                'وزارة التعليم',
+                eduAdmin ? (eduAdmin.includes('إدارة') ? eduAdmin : 'إدارة التعليم: ' + eduAdmin) : '',
+                schoolName ? (schoolName.includes('مدرسة') ? schoolName : 'المدرسة: ' + schoolName) : ''
+            ].filter(Boolean);
+
+            let leftLines = [];
+            const leftBox = sheet.querySelector('div[style*="text-align: left"], div[style*="text-align:left"], .report-header-left');
+            if (leftBox) {
+                leftLines = Array.from(leftBox.querySelectorAll('p, span')).map(p => p.innerText.trim()).filter(Boolean);
+            }
+            if (!leftLines.length) {
+                const today = new Date().toISOString().split('T')[0];
+                leftLines = ['التاريخ: ' + today, 'المرفقات: لا يوجد'];
+            }
+
+            // 3. رسم الكليشة العلوية الرسمية
+            if (fontBase64) doc.setFont('Amiri');
+
+            // على اليمين
+            let curRightY = 9;
+            rightLines.forEach((line, idx) => {
+                doc.setFontSize(idx === 0 ? 10 : 8.5);
+                doc.text(line, rightX, curRightY, { align: 'right' });
+                curRightY += 5;
+            });
+
+            // على اليسار
+            let curLeftY = 9;
+            leftLines.forEach(line => {
+                doc.setFontSize(8.5);
+                doc.text(line, leftX, curLeftY, { align: 'left' });
+                curLeftY += 5;
+            });
+
+            // رسم الشعار والعنوان بالمنتصف
+            let logoDrawn = false;
+            const previewImg = sheet.querySelector('img');
+            if (previewImg && previewImg.src && !previewImg.src.includes('svg')) {
+                try {
+                    let imgData = previewImg.src;
+                    if (!imgData.startsWith('data:image/png') && !imgData.startsWith('data:image/jpeg')) {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = previewImg.naturalWidth || 64;
+                        canvas.height = previewImg.naturalHeight || 64;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(previewImg, 0, 0, canvas.width, canvas.height);
+                        imgData = canvas.toDataURL('image/png');
+                    }
+                    doc.addImage(imgData, 'PNG', centerX - 7, 6, 14, 14);
+                    logoDrawn = true;
+                } catch(e) {}
+            }
+
+            if (!logoDrawn) {
+                doc.setFillColor(15, 23, 42);
+                doc.roundedRect(centerX - 6, 7, 12, 12, 2, 2, 'F');
+                doc.setFontSize(7.5);
+                if (fontBase64) doc.setFont('Amiri');
+                doc.setTextColor(255, 255, 255);
+                doc.text('سجل', centerX, 14.5, { align: 'center' });
+                doc.setTextColor(0, 0, 0);
+            }
+
+            doc.setFontSize(12.5);
+            if (fontBase64) doc.setFont('Amiri');
+            doc.text(reportTitle, centerX, 25, { align: 'center' });
+
+            doc.setDrawColor(70, 70, 70);
+            doc.setLineWidth(0.3);
+            doc.line(leftX, 30, rightX, 30);
+
+            // 4. استخراج وبناء الجدول برمجياً عبر autoTable بنظام RTL
+            const table = sheet.querySelector('table');
+            if (table) {
+                const theadRows = Array.from(table.querySelectorAll('thead tr'));
+                let finalHeaders = [];
+                if (theadRows.length > 0) {
+                    const lastTr = theadRows[theadRows.length - 1];
+                    finalHeaders = Array.from(lastTr.children).map(th => th.innerText.trim());
+                } else {
+                    const firstTr = table.querySelector('tr');
+                    if (firstTr) {
+                        finalHeaders = Array.from(firstTr.children).map(c => c.innerText.trim());
+                    }
+                }
+
+                const headers = finalHeaders.reverse();
+                const rows = Array.from(table.querySelectorAll('tbody tr'))
+                    .filter(tr => tr.offsetParent !== null || tr.querySelectorAll('td').length > 0)
+                    .map(tr => Array.from(tr.children).map(td => td.innerText.trim()).reverse());
+
+                doc.autoTable({
+                    head: headers.length ? [headers] : undefined,
+                    body: rows,
+                    startY: 34,
+                    styles: {
+                        font: fontBase64 ? 'Amiri' : undefined,
+                        fontStyle: 'normal',
+                        halign: 'center',
+                        valign: 'middle',
+                        fontSize: isLandscape ? 8.5 : 9,
+                        cellPadding: 1.8,
+                        lineWidth: 0.2,
+                        lineColor: [0, 0, 0],
+                        textColor: [0, 0, 0]
+                    },
+                    headStyles: {
+                        fillColor: [240, 243, 246],
+                        textColor: [0, 0, 0],
+                        fontStyle: 'bold'
+                    },
+                    theme: 'grid'
+                });
+            }
+
+            // 5. رسم التذييل والتوقيعات الرسمية
+            const terms = (typeof getGenderTerms === 'function') ? getGenderTerms() : { adminTerm: 'المساعد الإداري', managerTerm: 'مدير المدرسة' };
+            const finalAdminName = (db.settings && db.settings.adminName && db.settings.adminName.trim()) || (document.getElementById('setAdminName')?.value?.trim() || '');
+            const finalManagerName = (db.settings && db.settings.managerName && db.settings.managerName.trim()) || (document.getElementById('setManagerName')?.value?.trim() || '');
+
+            let footerY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 12 : (isLandscape ? 175 : 255);
+            const maxY = isLandscape ? 185 : 265;
+            if (footerY > maxY) {
+                doc.addPage();
+                footerY = 25;
+            }
+
+            doc.setFontSize(9.5);
+            if (fontBase64) doc.setFont('Amiri');
+
+            doc.text((terms.adminTerm || 'المساعد الإداري') + ': ' + (finalAdminName || '....................'), rightX, footerY, { align: 'right' });
+            doc.text('التوقيع: ....................', rightX, footerY + 6, { align: 'right' });
+
+            doc.text('ختم المدرسة الرسمي', centerX, footerY + 3, { align: 'center' });
+
+            doc.text((terms.managerTerm || 'مدير المدرسة') + ': ' + (finalManagerName || '....................'), leftX, footerY, { align: 'left' });
+            doc.text('التوقيع: ....................', leftX, footerY + 6, { align: 'left' });
+
+            // 6. التحويل إلى ملف PDF ومشاركته عبر نافذة المشاركة الأصلية (AirPrint)
+            const pdfBlob = doc.output('blob');
+            const safeTitle = (reportTitle || 'تقرير_الحضور').replace(/[\s\/\\]+/g, '_');
+            const pdfFileName = `${safeTitle}.pdf`;
+            const pdfFile = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
+
+            if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+                try {
+                    await navigator.share({
+                        files: [pdfFile],
+                        title: reportTitle
+                    });
+                    showAppToast("✅ تم فتح نافذة الطباعة والمشاركة بنجاح!", "success");
+                    return;
+                } catch(shErr) {
+                    if (shErr.name === 'AbortError') return;
+                    console.warn("Share failed:", shErr);
+                }
+            }
+
+            doc.save(pdfFileName);
+            showAppToast("✅ تم تنزيل ملف الـ PDF بنجاح!", "success");
+        }
+
+        window.isIOSDevice = isIOSDevice;
+        window.generateAndSharePdf = generateAndSharePdf;
+
         function sendToPhysicalPrinter() {
+            // في أجهزة الآيفون والآيباد: التحويل للطباعة البرمجية AirPrint مباشرة
+            if (isIOSDevice()) {
+                generateAndSharePdf();
+                return;
+            }
+
             // ضمان وحقن الأسماء الفعلية بدقة باللون الأسود دون تصفيرها قبل استدعاء window.print()
             const finalManagerName = (db.settings && db.settings.managerName && db.settings.managerName.trim()) 
                 ? db.settings.managerName.trim() 
@@ -6420,6 +6763,11 @@ body {
 
         // تصدير المعاينة الحالية كملف PDF متكامل (يدعم Electron و PWA على كافة الأجهزة)
         async function exportCurrentPreviewToPdf() {
+            if (isIOSDevice()) {
+                generateAndSharePdf();
+                return;
+            }
+
             const sheet = document.getElementById('inAppPrintPreviewSheet');
             if (!sheet || !sheet.innerHTML.trim()) {
                 showAppToast("لا توجد معاينة حالية لتصديرها!", "warning");
