@@ -152,6 +152,116 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 </script>
     <style>
         body { font-family: 'Tajawal', sans-serif; }
+
+        /* Fluid Typography & Responsive Design v1.8 */
+        html {
+            font-size: clamp(13px, 3.6vw, 16px) !important;
+            max-width: 100vw !important;
+            overflow-x: hidden !important;
+        }
+        body {
+            padding-top: max(env(safe-area-inset-top), 24px) !important;
+            padding-bottom: max(env(safe-area-inset-bottom), 24px) !important;
+            padding-inline: clamp(10px, 3vw, 24px) !important;
+            max-width: 100vw !important;
+            overflow-x: hidden !important;
+        }
+        h1, h2, h3, .main-title, .report-title {
+            font-size: clamp(1.15rem, 4.8vw, 1.6rem) !important;
+        }
+        p, .card-text, .emp-card, .stat-card {
+            font-size: clamp(0.85rem, 3.5vw, 1rem) !important;
+        }
+        button, .tab-btn, a.btn, input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea {
+            font-size: clamp(0.85rem, 3.5vw, 0.98rem) !important;
+            min-height: 46px !important;
+            border-radius: 14px !important;
+        }
+        /* استثناء لحقول الوقت الرقمية المدمجة */
+        input[id^="arrH-"], input[id^="arrM-"] {
+            min-height: 38px !important;
+            width: 44px !important;
+            font-size: 16px !important;
+            padding: 2px !important;
+            border-radius: 8px !important;
+        }
+        select[id^="arrPeriod-"] {
+            min-height: 38px !important;
+            font-size: 14px !important;
+            padding: 2px 4px !important;
+            border-radius: 8px !important;
+        }
+
+        /* شريط أزرار معاينة الطباعة العلوي مع خلفية داكنة صلبة ومسافة آمنة للنوتش */
+        #inAppPrintPreviewModal header {
+            padding-top: calc(env(safe-area-inset-top, 20px) + 20px) !important;
+            background: #0f172a !important;
+            background-color: #0f172a !important;
+        }
+
+        /* نافذة الإشعارات العائمة الاحترافية أسفل النوتش بوضوح تام */
+        #appToastContainer {
+            position: fixed !important;
+            top: calc(env(safe-area-inset-top, 20px) + 55px) !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            z-index: 9999999 !important;
+            pointer-events: none !important;
+            width: max-content !important;
+            max-width: 90vw !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 8px !important;
+            align-items: center !important;
+        }
+        .app-toast-item {
+            pointer-events: auto !important;
+            background: #0f172a !important;
+            color: #ffffff !important;
+            border: 2px solid #38bdf8 !important;
+            border-radius: 14px !important;
+            padding: 12px 18px !important;
+            font-size: 15px !important;
+            font-weight: bold !important;
+            line-height: 1.5 !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 10px !important;
+            animation: toastSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+            cursor: pointer !important;
+            text-align: center !important;
+            direction: rtl !important;
+            white-space: pre-line !important;
+            max-width: 90vw !important;
+            z-index: 999999 !important;
+        }
+
+        /* تنظيم الأزرار والفلاتر في جميع التبويبات في شبكة متناظرة متكيفة على الجوال (< 768px) */
+        @media (max-width: 767px) {
+            .filter-bar-responsive,
+            .btn-bar-responsive,
+            #sec-daily .bg-white.p-5 > div.flex.flex-wrap,
+            #sec-daily .bg-white.p-6 > div.flex.flex-wrap,
+            #sec-attendance .grid.grid-cols-1.md\:grid-cols-4,
+            #sec-attendance .flex.flex-wrap.items-end,
+            #sec-delays .flex.flex-wrap.items-center {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 10px !important;
+                width: 100% !important;
+            }
+            #sec-daily .bg-white.p-5 > div.flex.flex-wrap > *,
+            #sec-daily .bg-white.p-6 > div.flex.flex-wrap > *,
+            #sec-attendance .grid.grid-cols-1.md\:grid-cols-4 > *,
+            #sec-attendance .flex.flex-wrap.items-end > *,
+            #sec-delays .flex.flex-wrap.items-center > * {
+                width: 100% !important;
+                min-width: 0 !important;
+            }
+        }
+
         .print-only, #printArea { display: none !important; }
 
         /* نافذة معاينة الطباعة الداخلية التفاعلية (Print Preview Modal) */
@@ -755,7 +865,7 @@ body {
                 <div class="flex items-center justify-center gap-2 mt-2">
                     <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-black bg-blue-500/20 text-blue-300 border border-blue-400/30 shadow-sm font-mono tracking-wider">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        v1.6
+                        v1.8
                     </span>
                 </div>
                 <p id="appAdminNameDisplay" class="text-xs text-emerald-400 mt-1.5 font-bold hidden"></p>
@@ -798,7 +908,7 @@ body {
 
         <!-- المحتوى الرئيسي -->
         <main class="flex-1 p-4 md:p-8 overflow-y-auto">
-            <!-- شريط علوي أنيق للجوال مع شارة رقم الإصدار v1.6 -->
+            <!-- شريط علوي أنيق للجوال مع شارة رقم الإصدار v1.8 -->
             <div class="md:hidden flex items-center justify-between bg-slate-900 text-white px-4 py-2.5 rounded-2xl mb-4 shadow-md border border-slate-800">
                 <div class="flex items-center gap-2.5">
                     <img src="icon.png" alt="أيقونة" class="w-7 h-7 rounded-xl object-contain border border-slate-700/60 shadow-sm">
@@ -809,7 +919,7 @@ body {
                 </div>
                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-500/25 text-blue-300 border border-blue-400/40 font-mono tracking-wider shadow-sm">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    v1.6
+                    v1.8
                 </span>
             </div>
 
@@ -3722,11 +3832,12 @@ body {
             }
         }
 
-        // عند كتابة دقائق التأخير يدوياً
+        // عند كتابة دقائق التأخير يدوياً دون لمس باقي الواجهة
         function onDelayMinutesInput(empId, val) {
             const arrEl = document.getElementById(`arrivalTime-${empId}`);
             const hEl = document.getElementById(`arrH-${empId}`);
             const mEl = document.getElementById(`arrM-${empId}`);
+            const periodEl = document.getElementById(`arrPeriod-${empId}`);
             const effectiveWorkStart = (arrEl && arrEl.dataset && arrEl.dataset.workStart) || (db.settings && db.settings.workStartTime) || "07:00";
 
             if (val !== '' && !isNaN(val)) {
@@ -3734,27 +3845,36 @@ body {
                 if (!isNaN(delayMins) && delayMins >= 0) {
                     const startMins = parseTimeToMinutes(effectiveWorkStart);
                     const totalMins = startMins + delayMins;
-                    const h = String(Math.floor(totalMins / 60) % 24).padStart(2, '0');
+                    const h24 = Math.floor(totalMins / 60) % 24;
                     const m = String(totalMins % 60).padStart(2, '0');
-                    const timeStr = `${h}:${m}`;
+                    const timeStr = `${String(h24).padStart(2, '0')}:${m}`;
+                    
                     if (arrEl) arrEl.value = timeStr;
-                    if (hEl && document.activeElement !== hEl) hEl.value = h;
+                    
+                    const isPM = h24 >= 12;
+                    const h12 = (h24 % 12 === 0) ? 12 : (h24 % 12);
+                    const hDisplay = String(h12).padStart(2, '0');
+                    
+                    if (hEl && document.activeElement !== hEl) hEl.value = hDisplay;
                     if (mEl && document.activeElement !== mEl) mEl.value = m;
+                    if (periodEl) periodEl.value = isPM ? 'PM' : 'AM';
+                    
                     saveEmployeeLiveDelay(empId, delayMins, timeStr);
                 }
             } else {
                 saveEmployeeLiveDelay(empId, '', arrEl ? arrEl.value : effectiveWorkStart);
             }
-            // تحديث الأرقام العلوية فقط دون إعادة رسم قائمة الموظفين
+            // تحديث الإحصائيات العلوية فقط دون إعادة رسم قائمة الموظفين
             updateDailyStats();
         }
 
-        // عند كتابة أجزاء وقت الحضور (ساعة / دقيقة) يدوياً
+        // عند كتابة أجزاء وقت الحضور (ساعة / دقيقة / فترة) يدوياً
         function onTimePartInput(empId) {
             const arrEl = document.getElementById(`arrivalTime-${empId}`);
             const detailEl = document.getElementById(`detail-${empId}`);
             const hEl = document.getElementById(`arrH-${empId}`);
             const mEl = document.getElementById(`arrM-${empId}`);
+            const periodEl = document.getElementById(`arrPeriod-${empId}`);
             if (!hEl || !mEl || !detailEl) return;
 
             let h = hEl.value.replace(/[^0-9]/g, '');
@@ -3762,12 +3882,25 @@ body {
             if (h.length > 2) h = h.slice(0, 2);
             if (m.length > 2) m = m.slice(0, 2);
 
+            const period = periodEl ? periodEl.value : 'AM';
             const effectiveWorkStart = (arrEl && arrEl.dataset && arrEl.dataset.workStart) || (db.settings && db.settings.workStartTime) || "07:00";
 
             if (h !== '' && m !== '') {
-                const hNum = Math.min(23, parseInt(h, 10) || 0);
-                const mNum = Math.min(59, parseInt(m, 10) || 0);
-                const timeStr = `${String(hNum).padStart(2, '0')}:${String(mNum).padStart(2, '0')}`;
+                let hNum = parseInt(h, 10) || 0;
+                let mNum = Math.min(59, parseInt(m, 10) || 0);
+                
+                let effectiveH24 = hNum;
+                if (hNum <= 12) {
+                    if (period === 'PM') {
+                        effectiveH24 = (hNum === 12) ? 12 : hNum + 12;
+                    } else {
+                        effectiveH24 = (hNum === 12) ? 0 : hNum;
+                    }
+                } else {
+                    effectiveH24 = Math.min(23, hNum);
+                }
+
+                const timeStr = `${String(effectiveH24).padStart(2, '0')}:${String(mNum).padStart(2, '0')}`;
                 if (arrEl) arrEl.value = timeStr;
 
                 const startMins = parseTimeToMinutes(effectiveWorkStart);
@@ -3782,17 +3915,26 @@ body {
             updateDailyStats();
         }
 
-        // عند اختيار الوقت من منتقي الوقت
+        // منتقي الوقت الاحتياطي
         function onStandardTimePickerChange(empId, timeVal) {
             if (!timeVal) return;
             const parts = timeVal.split(':');
             const hEl = document.getElementById(`arrH-${empId}`);
             const mEl = document.getElementById(`arrM-${empId}`);
+            const periodEl = document.getElementById(`arrPeriod-${empId}`);
             const detailEl = document.getElementById(`detail-${empId}`);
-            if (hEl) hEl.value = parts[0] || '07';
-            if (mEl) mEl.value = parts[1] || '00';
+            
+            const rawH = parseInt(parts[0] || '7', 10);
+            const m = parts[1] || '00';
+            const isPM = rawH >= 12;
+            const h12 = (rawH % 12 === 0) ? 12 : (rawH % 12);
+
+            if (hEl) hEl.value = String(h12).padStart(2, '0');
+            if (mEl) mEl.value = m;
+            if (periodEl) periodEl.value = isPM ? 'PM' : 'AM';
 
             const arrEl = document.getElementById(`arrivalTime-${empId}`);
+            if (arrEl) arrEl.value = timeVal;
             const effectiveWorkStart = (arrEl && arrEl.dataset && arrEl.dataset.workStart) || (db.settings && db.settings.workStartTime) || "07:00";
             const startMins = parseTimeToMinutes(effectiveWorkStart);
             const arrMins = parseTimeToMinutes(timeVal);
@@ -3801,29 +3943,6 @@ body {
             if (detailEl) detailEl.value = delayMins;
             saveEmployeeLiveDelay(empId, delayMins, timeVal);
             updateDailyStats();
-        }
-
-        // للتوافق مع أي استدعاءات قديمة
-        function calculateDelayFromTime(empId) {
-            const arrEl = document.getElementById(`arrivalTime-${empId}`);
-            if (arrEl) onStandardTimePickerChange(empId, arrEl.value);
-        }
-        function calculateTimeFromDelay(empId) {
-            const detailEl = document.getElementById(`detail-${empId}`);
-            if (detailEl) onDelayMinutesInput(empId, detailEl.value);
-        }
-
-        // إلغاء تصفية تقرير دقائق التأخير وإعادة ضبط الحقول
-        function resetDelayFilters() {
-            const fromEl = document.getElementById('delayFilterFrom');
-            const toEl = document.getElementById('delayFilterTo');
-            const yearEl = document.getElementById('delayYearGregorianSelect');
-            const empEl = document.getElementById('delayFilterEmp');
-            if (fromEl) fromEl.value = '';
-            if (toEl) toEl.value = '';
-            if (yearEl) yearEl.value = '';
-            if (empEl) empEl.value = 'ALL';
-            renderDelaysLog();
         }
 
         function getDetailInputHTML(empId, status, value, rec = null) {
@@ -3849,27 +3968,34 @@ body {
                 }
 
                 let timeParts = initialArrivalTime.split(':');
-                let hVal = timeParts[0] || '07';
+                let rawH = parseInt(timeParts[0] || '7', 10);
                 let mVal = timeParts[1] || '00';
+                let periodVal = rawH >= 12 ? 'PM' : 'AM';
+                let displayH = rawH % 12 === 0 ? 12 : rawH % 12;
+                let hVal = String(displayH).padStart(2, '0');
 
                 return `
                     <div class="space-y-1.5 w-full max-w-xs">
                         <div class="flex flex-col sm:flex-row items-center gap-2">
-                            <!-- حقل وقت الحضور مع إدخال رقمي يدوي سريع (ساعة : دقيقة) ومنتقي الوقت -->
+                            <!-- حقل وقت الحضور مع إدخال رقمي يدوي سريع (ساعة : دقيقة + ص/م) بدون أي منتقي وقت إجباري -->
                             <div class="w-full sm:w-1/2">
                                 <label class="block text-[10px] font-bold text-slate-500 mb-0.5">وقت الحضور:</label>
                                 <div class="flex items-center gap-1 bg-white border-2 border-slate-300 rounded-xl p-1 shadow-sm focus-within:ring-2 focus-within:ring-amber-500">
-                                    <input type="tel" inputmode="numeric" maxlength="2" id="arrH-${empId}" value="${hVal}" oninput="onTimePartInput(${empId})" placeholder="سس" title="الساعة (00-23)" class="w-10 text-center font-bold text-slate-800 outline-none p-0.5 bg-transparent" style="font-size: 16px !important;">
+                                    <input type="text" inputmode="numeric" maxlength="2" id="arrH-${empId}" value="${hVal}" oninput="onTimePartInput(${empId})" placeholder="07" title="الساعة (01-12)" class="w-9 text-center font-bold text-slate-800 outline-none p-0.5 bg-transparent" style="font-size: 16px !important;">
                                     <span class="font-bold text-slate-400 select-none">:</span>
-                                    <input type="tel" inputmode="numeric" maxlength="2" id="arrM-${empId}" value="${mVal}" oninput="onTimePartInput(${empId})" placeholder="دد" title="الدقيقة (00-59)" class="w-10 text-center font-bold text-slate-800 outline-none p-0.5 bg-transparent" style="font-size: 16px !important;">
-                                    <input type="time" id="arrivalTime-${empId}" data-work-start="${effectiveWorkStart}" value="${initialArrivalTime}" onchange="onStandardTimePickerChange(${empId}, this.value)" class="w-7 h-7 p-0 border-0 outline-none cursor-pointer bg-transparent text-slate-500 shrink-0" title="أو اختر من منتقي الوقت">
+                                    <input type="text" inputmode="numeric" maxlength="2" id="arrM-${empId}" value="${mVal}" oninput="onTimePartInput(${empId})" placeholder="00" title="الدقيقة (00-59)" class="w-9 text-center font-bold text-slate-800 outline-none p-0.5 bg-transparent" style="font-size: 16px !important;">
+                                    <select id="arrPeriod-${empId}" onchange="onTimePartInput(${empId})" class="p-0.5 border border-slate-300 rounded-lg bg-slate-50 font-bold text-xs text-slate-700 outline-none cursor-pointer" style="font-size: 13px !important;">
+                                        <option value="AM" ${periodVal === 'AM' ? 'selected' : ''}>ص</option>
+                                        <option value="PM" ${periodVal === 'PM' ? 'selected' : ''}>م</option>
+                                    </select>
+                                    <input type="hidden" id="arrivalTime-${empId}" data-work-start="${effectiveWorkStart}" value="${initialArrivalTime}">
                                 </div>
                             </div>
 
                             <!-- حقل دقائق التأخير رقمي حر يقبل الكتابة اليدوية المباشرة دون مسح -->
                             <div class="w-full sm:w-1/2">
                                 <label class="block text-[10px] font-bold text-slate-500 mb-0.5">دقائق التأخير:</label>
-                                <input type="tel" inputmode="numeric" pattern="[0-9]*" id="detail-${empId}" value="${value !== undefined && value !== null ? value : ''}" oninput="onDelayMinutesInput(${empId}, this.value)" onchange="onDelayMinutesInput(${empId}, this.value)" placeholder="الدقائق" style="font-size: 16px !important; background-color: #ffffff !important; border: 2px solid #cbd5e1 !important;" class="p-2 rounded-xl w-full font-bold focus:ring-2 focus:ring-amber-500 outline-none text-slate-800 shadow-sm">
+                                <input type="text" inputmode="numeric" id="detail-${empId}" value="${value !== undefined && value !== null ? value : ''}" oninput="onDelayMinutesInput(${empId}, this.value)" onchange="onDelayMinutesInput(${empId}, this.value)" placeholder="الدقائق" style="font-size: 16px !important; background-color: #ffffff !important; border: 2px solid #cbd5e1 !important;" class="p-2 rounded-xl w-full font-bold focus:ring-2 focus:ring-amber-500 outline-none text-slate-800 shadow-sm">
                             </div>
                         </div>
                         <button type="button" onclick="printLatenessInquiry(${empId})" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm w-full no-print">
@@ -5549,10 +5675,131 @@ body {
         window.isIOSDevice = isIOSDevice;
         window.generateAndSharePdf = generateAndSharePdf;
 
+
+        // الحل القاطع لمشكلة تعليق الطباعة (...Printing) في الآيفون والآيباد عبر تحويل التقرير إلى صورة PNG عالية الدقة
+        async function printViaHighResImageIOS() {
+            const sheet = document.getElementById('inAppPrintPreviewSheet') || document.getElementById('printArea');
+            if (!sheet || !sheet.innerHTML.trim()) {
+                showAppToast("⚠️ لا يوجد محتوى تقرير متاح للطباعة!", "warning");
+                return;
+            }
+
+            if (typeof html2canvas !== 'function') {
+                showAppToast("⚠️ جاري تحميل محرك معالجة الصور، يرجى الانتظار...", "warning");
+                return;
+            }
+
+            showAppToast("⏳ جاري تجهيز التقرير للطباعة عبر AirPrint والمشاركة...", "info", 3500);
+
+            const isLandscape = (typeof currentPrintOrientation !== 'undefined' && currentPrintOrientation === 'landscape');
+
+            let reportTitle = 'تقرير_الحضور';
+            const titleEl = sheet.querySelector('#prtReportTitle, h1, h2, h3, .report-title');
+            if (titleEl && titleEl.textContent.trim()) {
+                reportTitle = titleEl.textContent.trim().replace(/[\s\/\\]+/g, '_');
+            }
+            const pngFileName = `${reportTitle}.png`;
+
+            try {
+                const clone = sheet.cloneNode(true);
+                clone.style.width = isLandscape ? '297mm' : '210mm';
+                clone.style.maxWidth = isLandscape ? '297mm' : '210mm';
+                clone.style.minHeight = isLandscape ? '210mm' : '297mm';
+                clone.style.padding = isLandscape ? '8mm 10mm' : '10mm 12mm';
+                clone.style.background = '#ffffff';
+                clone.style.color = '#000000';
+                clone.style.position = 'fixed';
+                clone.style.top = '-9999px';
+                clone.style.left = '0';
+                clone.style.zIndex = '-9999';
+                clone.style.boxShadow = 'none';
+                clone.style.margin = '0';
+                clone.style.overflow = 'visible';
+                document.body.appendChild(clone);
+
+                const cloneTables = clone.querySelectorAll('table');
+                cloneTables.forEach(t => {
+                    t.style.width = '100%';
+                    t.style.minWidth = '0';
+                    t.style.tableLayout = 'auto';
+                });
+
+                const canvas = await html2canvas(clone, {
+                    scale: 3,
+                    useCORS: true,
+                    logging: false,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff'
+                });
+
+                clone.remove();
+
+                canvas.toBlob(async (pngBlob) => {
+                    if (!pngBlob) {
+                        showAppToast("❌ تعذر إنشاء صورة التقرير!", "error");
+                        return;
+                    }
+
+                    const pngFile = new File([pngBlob], pngFileName, { type: 'image/png' });
+
+                    if (navigator.canShare && navigator.canShare({ files: [pngFile] })) {
+                        try {
+                            await navigator.share({
+                                files: [pngFile],
+                                title: reportTitle.replace(/_/g, ' ')
+                            });
+                            showAppToast("✅ تم فتح نافذة الطباعة والمشاركة! اختر (طباعة / Print) للطباعة الفورية.", "success", 4000);
+                        } catch(shareErr) {
+                            if (shareErr.name !== 'AbortError') {
+                                const imgUrl = URL.createObjectURL(pngBlob);
+                                const a = document.createElement('a');
+                                a.href = imgUrl;
+                                a.download = pngFileName;
+                                a.click();
+                            }
+                        }
+                    } else if (navigator.share) {
+                        try {
+                            await navigator.share({
+                                files: [pngFile],
+                                title: reportTitle.replace(/_/g, ' ')
+                            });
+                        } catch(shareErr) {
+                            if (shareErr.name !== 'AbortError') {
+                                const imgUrl = URL.createObjectURL(pngBlob);
+                                const a = document.createElement('a');
+                                a.href = imgUrl;
+                                a.download = pngFileName;
+                                a.click();
+                            }
+                        }
+                    } else {
+                        const imgUrl = URL.createObjectURL(pngBlob);
+                        const win = window.open(imgUrl, '_blank');
+                        if (!win) {
+                            const a = document.createElement('a');
+                            a.href = imgUrl;
+                            a.download = pngFileName;
+                            a.click();
+                        }
+                        showAppToast("✅ تم إنشاء صورة التقرير عالية الدقة!", "success");
+                    }
+                }, 'image/png');
+
+            } catch(err) {
+                console.error("Error capturing PNG for AirPrint:", err);
+                showAppToast("⚠️ حدث خطأ أثناء تجهيز الصورة، جاري التحويل للبديل...", "warning");
+                if (typeof generateAndSharePdf === 'function') {
+                    generateAndSharePdf();
+                }
+            }
+        }
+        window.printViaHighResImageIOS = printViaHighResImageIOS;
+
         function sendToPhysicalPrinter() {
-            // في أجهزة الآيفون والآيباد: التحويل للطباعة البرمجية AirPrint مباشرة
+            // في أجهزة الآيفون والآيباد: التحويل لطباعة صورة PNG مسطحة عالية الدقة لمنع تعليق AirPrint نهائياً
             if (isIOSDevice()) {
-                generateAndSharePdf();
+                printViaHighResImageIOS();
                 return;
             }
 
