@@ -175,7 +175,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
             unicode-bidi: embed !important;
         }
 
-        /* القياسات القياسية المريحة لشاشات الكمبيوتر والتحكم المتجاوب v2.1 */
+        /* القياسات القياسية المريحة لشاشات الكمبيوتر والتحكم المتجاوب v2.2 */
         html {
             font-size: 15px !important;
             max-width: 100vw !important;
@@ -936,8 +936,11 @@ body {
                 <div class="flex items-center justify-center gap-2 mt-2">
                     <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-black bg-blue-500/20 text-blue-300 border border-blue-400/30 shadow-sm font-mono tracking-wider">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        v2.1
+                        v2.2
                     </span>
+                </div>
+                <div class="flex justify-center">
+                    <div id="syncFileStatusBadge" style="display: none;"></div>
                 </div>
                 <p id="appAdminNameDisplay" class="text-xs text-emerald-400 mt-1.5 font-bold hidden"></p>
             </div>
@@ -979,8 +982,11 @@ body {
 
         <!-- المحتوى الرئيسي -->
         <main class="flex-1 p-4 md:p-8 overflow-y-auto">
-            <!-- شريط علوي أنيق للجوال مع شارة رقم الإصدار v2.1 -->
+            <!-- شريط علوي أنيق للجوال مع شارة رقم الإصدار v2.2 -->
             <div class="md:hidden flex items-center justify-between bg-slate-900 text-white px-4 py-2.5 rounded-2xl mb-4 shadow-md border border-slate-800">
+                <div class="flex items-center gap-2">
+                    <div id="syncFileStatusBadgeMobile" style="display: none;"></div>
+                </div>
                 <div class="flex items-center gap-2.5">
                     <img src="icon.png" alt="أيقونة" class="w-7 h-7 rounded-xl object-contain border border-slate-700/60 shadow-sm">
                     <div>
@@ -990,7 +996,7 @@ body {
                 </div>
                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-500/25 text-blue-300 border border-blue-400/40 font-mono tracking-wider shadow-sm">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    v2.1
+                    v2.2
                 </span>
             </div>
 
@@ -1448,6 +1454,35 @@ body {
                                         <span>📥</span> <span>استرجاع من النسخ</span>
                                     </button>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- درع حماية البيانات الدائم (File System Access & Auto-Sync) -->
+                        <div class="bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border-2 border-emerald-500/40 p-4 sm:p-5 rounded-2xl mb-4 shadow-lg">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl shrink-0 border border-emerald-500/30">
+                                        🛡️
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-sm sm:text-base text-emerald-400">درع حماية البيانات الدائم</h3>
+                                        <p id="shieldStatusText" class="text-xs text-slate-300 mt-0.5">يحفظ بياناتك وسجلاتك تلقائياً وبأمان حتى لو قمت بمسح بيانات التصفح.</p>
+                                    </div>
+                                </div>
+                                <div id="shieldBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700">
+                                    <span>⚪</span> <span>غير مربوط بملف خارجي</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2.5 mt-3 pt-3 border-t border-slate-800">
+                                <button type="button" id="btnLinkAutoSaveFile" onclick="linkAutoSaveFile()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/30">
+                                    <span>🔗</span> <span>ربط ملف حفظ تلقائي (حماية دائمة)</span>
+                                </button>
+                                <button type="button" id="btnRestoreAndLinkFile" onclick="restoreAndLinkExistingFile()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-blue-600/30">
+                                    <span>📥</span> <span>استعادة وربط من ملف سابق</span>
+                                </button>
+                                <button type="button" onclick="quickBackupGuard(true)" class="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-amber-600/30" title="حفظ نسخة احتياطية فورية في ملفات الآيفون أو السحابة">
+                                    <span>⚡</span> <span>نسخ احتياطي سريع (الآيفون / iCloud)</span>
+                                </button>
                             </div>
                         </div>
 
@@ -2122,6 +2157,8 @@ body {
 
         // تحميل البيانات بآمان مطلق عبر IndexedDB مع ترحيل تلقائي كامل من localStorage
         async function initApp() {
+            try { requestPersistentStorage(); } catch(e) {}
+            try { initSyncFileHandle(); } catch(e) {}
             try {
                 await checkSjelhothorLicense();
             } catch(e) {
@@ -2413,12 +2450,435 @@ body {
             }
 
             triggerAutoSaveToLinkedFolder();
+            try { notifyDataProtectionChange(); } catch(e) {}
             if (window.electronAPI && typeof window.electronAPI.saveDatabaseJson === 'function') {
                 try {
                     window.electronAPI.saveDatabaseJson(db);
                 } catch(e) {
                     console.warn("خطأ في المزامنة مع بيانات_سجل_الحضور.json المحمول:", e);
                 }
+            }
+        }
+
+        
+        // =========================================================================
+        // درع حماية البيانات الدائم (Persistent Storage & Auto File Sync v2.2)
+        // =========================================================================
+
+        let linkedSyncFileHandle = null;
+        let isSyncingExternalFile = false;
+        let autoSyncFileTimeout = null;
+        let unsavedChangesCount = parseInt(localStorage.getItem('unsavedChangesCount') || '0', 10);
+
+        // 1. تفعيل الحماية المدمجة للمتصفح لمنع مسح IndexedDB تلقائياً
+        async function requestPersistentStorage() {
+            if (navigator.storage && navigator.storage.persist) {
+                try {
+                    const isPersisted = await navigator.storage.persist();
+                    console.log("Persistent Storage status:", isPersisted);
+                } catch(e) {
+                    console.warn("Storage persist request error:", e);
+                }
+            }
+        }
+
+        // فحص دعم المتصفح لـ File System Access API
+        function isFSSupported() {
+            return typeof window.showSaveFilePicker === 'function' && typeof window.showOpenFilePicker === 'function';
+        }
+
+        // حفظ واسترجاع مقبض ملف الحفظ التلقائي من IndexedDB
+        async function saveSyncFileHandleToIDB(handle) {
+            try {
+                const idb = await openFSDB();
+                const tx = idb.transaction(FS_STORE_NAME, 'readwrite');
+                tx.objectStore(FS_STORE_NAME).put(handle, 'main_sync_file_handle');
+            } catch(e) {
+                console.warn("Could not save sync file handle to IDB:", e);
+            }
+        }
+
+        async function loadSyncFileHandleFromIDB() {
+            try {
+                const idb = await openFSDB();
+                const tx = idb.transaction(FS_STORE_NAME, 'readonly');
+                const req = tx.objectStore(FS_STORE_NAME).get('main_sync_file_handle');
+                return new Promise((resolve) => {
+                    req.onsuccess = () => resolve(req.result || null);
+                    req.onerror = () => resolve(null);
+                });
+            } catch(e) {
+                return null;
+            }
+        }
+
+        async function removeSyncFileHandleFromIDB() {
+            try {
+                const idb = await openFSDB();
+                const tx = idb.transaction(FS_STORE_NAME, 'readwrite');
+                tx.objectStore(FS_STORE_NAME).delete('main_sync_file_handle');
+            } catch(e) {}
+        }
+
+        // تهيئة الملف المربوط عند بدء تشغيل البرنامج
+        async function initSyncFileHandle() {
+            try {
+                const handle = await loadSyncFileHandleFromIDB();
+                if (handle) {
+                    linkedSyncFileHandle = handle;
+                    updateSyncFileBadge();
+                } else {
+                    updateSyncFileBadge();
+                }
+            } catch(e) {
+                updateSyncFileBadge();
+            }
+        }
+
+        // تحديث شارات الحالة في القوائم والشاشات
+        function updateSyncFileBadge(isConnected = null) {
+            const badgeDesktop = document.getElementById('syncFileStatusBadge');
+            const badgeMobile = document.getElementById('syncFileStatusBadgeMobile');
+            const shieldBadge = document.getElementById('shieldBadge');
+            const shieldStatusText = document.getElementById('shieldStatusText');
+
+            const connected = (isConnected !== null) ? isConnected : (linkedSyncFileHandle !== null);
+
+            if (connected && linkedSyncFileHandle) {
+                const name = linkedSyncFileHandle.name || 'ملف خارجي';
+                const badgeHtml = `<span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>🟢 محمي: حفظ تلقائي في الملف (${name})</span>`;
+                
+                if (badgeDesktop) {
+                    badgeDesktop.innerHTML = badgeHtml;
+                    badgeDesktop.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/50 shadow-sm mt-2 cursor-pointer';
+                    badgeDesktop.title = `يتم الحفظ التلقائي في: ${name}`;
+                    badgeDesktop.style.display = 'inline-flex';
+                }
+                if (badgeMobile) {
+                    badgeMobile.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span><span>محمي: حفظ تلقائي</span>`;
+                    badgeMobile.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 shadow-sm';
+                    badgeMobile.style.display = 'inline-flex';
+                }
+                if (shieldBadge) {
+                    shieldBadge.innerHTML = `<span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span>🟢 محمي: حفظ تلقائي في الملف (${name})</span>`;
+                    shieldBadge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-950/90 text-emerald-300 border border-emerald-500/60 shadow-md';
+                }
+                if (shieldStatusText) {
+                    shieldStatusText.innerHTML = `الدرع نشط ويعمل بنجاح: يتم حفظ كل تعديل مباشرة داخل الملف (<span class="font-bold text-emerald-300">${name}</span>).`;
+                }
+            } else {
+                if (badgeDesktop) badgeDesktop.style.display = 'none';
+                if (badgeMobile) badgeMobile.style.display = 'none';
+                if (shieldBadge) {
+                    shieldBadge.innerHTML = `<span>⚪</span> <span>غير مربوط بملف خارجي</span>`;
+                    shieldBadge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700';
+                }
+                if (shieldStatusText) {
+                    shieldStatusText.innerText = 'اربط ملف حفظ تلقائي لضمان حفظ كل تعديل مباشرة على القرص أو مجلد OneDrive.';
+                }
+            }
+        }
+
+        // كائن البيانات الموحد المتطابق 100% مع نسخة الكمبيوتر (EXE) وتطبيقات الجوال
+        function getUnifiedExportObject() {
+            return {
+                settings: {
+                    pass: (db.settings && db.settings.pass) || db.pass || getDefaultPass(),
+                    eduAdmin: (db.settings && db.settings.eduAdmin) || "",
+                    gender: (db.settings && db.settings.gender) || "male",
+                    schoolName: (db.settings && db.settings.schoolName) || "",
+                    managerName: (db.settings && db.settings.managerName) || "",
+                    adminName: (db.settings && db.settings.adminName) || "",
+                    workStartTime: (db.settings && db.settings.workStartTime) || "07:00",
+                    logo: (db.settings && db.settings.logo) || "",
+                    hideHeaderFooter: Boolean(db.settings && db.settings.hideHeaderFooter)
+                },
+                employees: (db.employees || []).map(emp => ({
+                    id: emp.id,
+                    name: emp.name || "",
+                    nationalId: emp.nationalId || ""
+                })),
+                records: db.records || db.attendance || {},
+                attendance: db.attendance || db.records || {}
+            };
+        }
+
+        // تطبيق الاستيراد الشامل المتوافق مع EXE والموبايل
+        async function applyImportedDatabase(importedDb) {
+            delete importedDb.boundDeviceId;
+            delete importedDb.boundFileName;
+
+            const incomingRecords = importedDb.records || importedDb.attendance || {};
+            const incomingEmployees = Array.isArray(importedDb.employees) ? importedDb.employees : [];
+            const incomingSettings = importedDb.settings || {};
+
+            if (!incomingEmployees.length && Object.keys(incomingRecords).length === 0 && Object.keys(incomingSettings).length === 0) {
+                throw new Error("ملف النسخة الاحتياطية لا يحتوي على بيانات صالحة لسجل الموظفين!");
+            }
+
+            const defaultSettings = getDefaultDB().settings;
+            db.settings = {
+                ...defaultSettings,
+                ...incomingSettings,
+                pass: incomingSettings.pass || importedDb.pass || db.settings.pass || getDefaultPass(),
+                eduAdmin: incomingSettings.eduAdmin || "",
+                gender: incomingSettings.gender || "male",
+                schoolName: incomingSettings.schoolName || "",
+                managerName: incomingSettings.managerName || "",
+                adminName: incomingSettings.adminName || "",
+                workStartTime: incomingSettings.workStartTime || "07:00",
+                logo: incomingSettings.logo || "",
+                hideHeaderFooter: Boolean(incomingSettings.hideHeaderFooter)
+            };
+            if (incomingSettings.pass || importedDb.pass) {
+                db.pass = incomingSettings.pass || importedDb.pass;
+            }
+
+            db.employees = incomingEmployees.map(emp => ({
+                id: emp.id,
+                name: emp.name || "",
+                nationalId: emp.nationalId || ""
+            }));
+
+            db.attendance = {};
+            db.records = {};
+            Object.keys(incomingRecords).forEach(dateKey => {
+                const dayData = incomingRecords[dateKey];
+                db.attendance[dateKey] = {};
+                db.records[dateKey] = {};
+                if (dayData && typeof dayData === 'object') {
+                    Object.keys(dayData).forEach(empKey => {
+                        const rec = dayData[empKey];
+                        const normalizedRec = {
+                            status: (rec && rec.status) || 'حاضر',
+                            detail: (rec && rec.detail) || '',
+                            arrivalTime: (rec && rec.arrivalTime) || '',
+                            workStartTime: (rec && rec.workStartTime) || '',
+                            notes: (rec && rec.notes) || ''
+                        };
+                        db.attendance[dateKey][empKey] = normalizedRec;
+                        db.records[dateKey][empKey] = normalizedRec;
+                    });
+                }
+            });
+
+            saveToLocalStorage();
+            if (typeof saveToIndexedDB === 'function') {
+                try { await saveToIndexedDB(); } catch(err) { console.warn(err); }
+            }
+
+            loadSettingsToUI();
+            updateGenderTerms();
+            updateAuthScreenUI();
+            renderEmployeesList();
+            updatePastDatesDropdown();
+            try { populateDynamicCalendarDropdowns(); } catch(err) {}
+            addOrLoadDailyRecord();
+            renderAttendanceLog();
+            renderDelaysLog();
+        }
+
+        // ربط ملف حفظ تلقائي خارجي (File System Access API)
+        async function linkAutoSaveFile() {
+            if (!isFSSupported()) {
+                showAppToast("⚠️ ميزة الحفظ التلقائي المباشر في ملف تتطلب متصفحاً حديثاً على الكمبيوتر (مثل Chrome أو Edge).\nعلى الجوال والآيباد استخدم زر 'نسخ احتياطي سريع' لحفظ النسخة في الملفات أو السحابة.", "warning", 6000);
+                return;
+            }
+            try {
+                const options = {
+                    suggestedName: 'بيانات_سجل_الموظفين_حفظ_تلقائي.json',
+                    types: [{
+                        description: 'ملف بيانات JSON',
+                        accept: { 'application/json': ['.json'] }
+                    }]
+                };
+                const handle = await window.showSaveFilePicker(options);
+                if (!handle) return;
+
+                const hasPerm = await verifyPermission(handle, true);
+                if (!hasPerm) {
+                    showAppToast("⚠️ لم يتم منح إذن الكتابة في الملف!", "warning");
+                    return;
+                }
+
+                linkedSyncFileHandle = handle;
+                await saveSyncFileHandleToIDB(handle);
+                await syncToExternalFile(true);
+                updateSyncFileBadge(true);
+                showAppToast(`🟢 تم تفعيل درع الحماية وربط الملف بنجاح!\nالملف: ${handle.name}\nسيتم حفظ كل تعديل فيه مباشرة وبأمان.`, "success", 5000);
+            } catch(e) {
+                if (e.name !== 'AbortError') {
+                    console.error("linkAutoSaveFile error:", e);
+                    showAppToast("❌ حدث خطأ أثناء ربط الملف!", "error");
+                }
+            }
+        }
+
+        // استعادة وربط من ملف سابق
+        async function restoreAndLinkExistingFile() {
+            if (!isFSSupported()) {
+                showAppToast("⚠️ هذه الميزة تتطلب متصفحاً حديثاً على الكمبيوتر (Chrome / Edge). للاستعادة على الجوال استخدم زر 'استرجاع نسخة احتياطية'.", "warning", 5000);
+                return;
+            }
+            try {
+                const [handle] = await window.showOpenFilePicker({
+                    types: [{
+                        description: 'ملف بيانات JSON',
+                        accept: { 'application/json': ['.json'] }
+                    }],
+                    multiple: false
+                });
+                if (!handle) return;
+
+                const file = await handle.getFile();
+                const text = await file.text();
+                const importedDb = JSON.parse(text);
+
+                if (!importedDb || typeof importedDb !== 'object') {
+                    showAppToast("❌ الملف المحدد غير صالح!", "error");
+                    return;
+                }
+
+                await applyImportedDatabase(importedDb);
+
+                const hasPerm = await verifyPermission(handle, true);
+                if (hasPerm) {
+                    linkedSyncFileHandle = handle;
+                    await saveSyncFileHandleToIDB(handle);
+                    updateSyncFileBadge(true);
+                }
+
+                showAppToast(`✅ تم استرجاع كافة البيانات وربط الملف (${handle.name}) للحفظ التلقائي الدائم!`, "success", 5000);
+            } catch(e) {
+                if (e.name !== 'AbortError') {
+                    console.error("restoreAndLinkExistingFile error:", e);
+                    showAppToast("❌ حدث خطأ أثناء قراءة الملف أو استرجاعه!", "error");
+                }
+            }
+        }
+
+        // المزامنة الصامتة في الخلفية مع الملف الخارجي
+        async function syncToExternalFile(forceToast = false) {
+            if (!linkedSyncFileHandle) return;
+            if (isSyncingExternalFile) return;
+            isSyncingExternalFile = true;
+
+            try {
+                const hasPerm = await verifyPermission(linkedSyncFileHandle, true);
+                if (!hasPerm) {
+                    updateSyncFileBadge(false);
+                    return;
+                }
+
+                const backupData = getUnifiedExportObject();
+                const jsonStr = JSON.stringify(backupData, null, 2);
+
+                const writable = await linkedSyncFileHandle.createWritable();
+                await writable.write(jsonStr);
+                await writable.close();
+
+                resetUnsavedChanges();
+                updateSyncFileBadge(true);
+                if (forceToast) {
+                    showAppToast(`🟢 تم حفظ التعديلات في الملف (${linkedSyncFileHandle.name}) بنجاح`, "success", 3000);
+                }
+            } catch(e) {
+                console.warn("syncToExternalFile write error:", e);
+                updateSyncFileBadge(false);
+            } finally {
+                isSyncingExternalFile = false;
+            }
+        }
+
+        // آلية الحماية السريعة لشاشات Safari / iOS
+        function incrementUnsavedChanges() {
+            unsavedChangesCount++;
+            try {
+                localStorage.setItem('unsavedChangesCount', String(unsavedChangesCount));
+            } catch(e) {}
+
+            // إظهار التنبيه اللطيف عند الوصول إلى 10 تعديلات في الأجهزة غير المربوطة بملف حفظ تلقائي
+            if (!linkedSyncFileHandle && unsavedChangesCount >= 10) {
+                showQuickBackupPrompt();
+            }
+        }
+
+        function resetUnsavedChanges() {
+            unsavedChangesCount = 0;
+            try {
+                localStorage.setItem('unsavedChangesCount', '0');
+            } catch(e) {}
+            dismissQuickBackupPrompt();
+        }
+
+        function showQuickBackupPrompt() {
+            const modal = document.getElementById('quickBackupPromptModal');
+            const badge = document.getElementById('unsavedCountBadge');
+            if (badge) badge.innerText = String(unsavedChangesCount);
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.style.display = 'block';
+            }
+        }
+
+        function dismissQuickBackupPrompt() {
+            const modal = document.getElementById('quickBackupPromptModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+            }
+        }
+
+        // دالة النسخ الاحتياطي السريع (Quick Backup Guard)
+        async function quickBackupGuard(fromPrompt = false) {
+            const now = new Date();
+            const datePart = now.toISOString().split('T')[0];
+            const timePart = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+            const backupFileName = `نسخة_سريعة_سجل_الموظفين_${datePart}_${timePart}.json`;
+
+            const backupData = getUnifiedExportObject();
+            const jsonStr = JSON.stringify(backupData, null, 2);
+            const blob = new Blob([jsonStr], { type: "application/json;charset=utf-8" });
+
+            resetUnsavedChanges();
+
+            if (navigator.canShare && typeof File !== 'undefined') {
+                const file = new File([blob], backupFileName, { type: "application/json" });
+                if (navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            files: [file],
+                            title: "نسخة احتياطية - سجل الموظفين"
+                        });
+                        showAppToast("✅ تم حفظ النسخة الاحتياطية بنجاح!", "success", 4000);
+                        return;
+                    } catch(e) {
+                        if (e.name === 'AbortError') return;
+                    }
+                }
+            }
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = backupFileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 1500);
+            showAppToast("✅ تم حفظ وتنزيل النسخة الاحتياطية بنجاح!", "success", 4000);
+        }
+
+        // إشعار نظام الحماية عند أي تعديل للبيانات
+        function notifyDataProtectionChange() {
+            incrementUnsavedChanges();
+            if (linkedSyncFileHandle) {
+                clearTimeout(autoSyncFileTimeout);
+                autoSyncFileTimeout = setTimeout(() => {
+                    syncToExternalFile();
+                }, 1000);
             }
         }
 
@@ -6841,85 +7301,8 @@ body {
                         return;
                     }
 
-                    // تجاهل قيود الأجهزة نهائياً (boundDeviceId, boundFileName)
-                    delete importedDb.boundDeviceId;
-                    delete importedDb.boundFileName;
-
-                    // قراءة السجلات اليومية سواء بمسماها records أو attendance
-                    const incomingRecords = importedDb.records || importedDb.attendance || {};
-                    const incomingEmployees = Array.isArray(importedDb.employees) ? importedDb.employees : [];
-                    const incomingSettings = importedDb.settings || {};
-
-                    if (!incomingEmployees.length && Object.keys(incomingRecords).length === 0 && Object.keys(incomingSettings).length === 0) {
-                        showAppToast("❌ ملف النسخة الاحتياطية لا يحتوي على بيانات صالحة لسجل الموظفين!", "error");
-                        return;
-                    }
-
-                    // 1. استعادة الإعدادات الأساسية
-                    const defaultSettings = getDefaultDB().settings;
-                    db.settings = {
-                        ...defaultSettings,
-                        ...incomingSettings,
-                        pass: incomingSettings.pass || importedDb.pass || db.settings.pass || getDefaultPass(),
-                        eduAdmin: incomingSettings.eduAdmin || "",
-                        gender: incomingSettings.gender || "male",
-                        schoolName: incomingSettings.schoolName || "",
-                        managerName: incomingSettings.managerName || "",
-                        adminName: incomingSettings.adminName || "",
-                        workStartTime: incomingSettings.workStartTime || "07:00",
-                        logo: incomingSettings.logo || "",
-                        hideHeaderFooter: Boolean(incomingSettings.hideHeaderFooter)
-                    };
-                    if (incomingSettings.pass || importedDb.pass) {
-                        db.pass = incomingSettings.pass || importedDb.pass;
-                    }
-
-                    // 2. استعادة مصفوفة الموظفين
-                    db.employees = incomingEmployees.map(emp => ({
-                        id: emp.id,
-                        name: emp.name || "",
-                        nationalId: emp.nationalId || ""
-                    }));
-
-                    // 3. استعادة السجلات اليومية ومزامنتها في attendance و records
-                    db.attendance = {};
-                    db.records = {};
-                    Object.keys(incomingRecords).forEach(dateKey => {
-                        const dayData = incomingRecords[dateKey];
-                        db.attendance[dateKey] = {};
-                        db.records[dateKey] = {};
-                        if (dayData && typeof dayData === 'object') {
-                            Object.keys(dayData).forEach(empKey => {
-                                const rec = dayData[empKey];
-                                const normalizedRec = {
-                                    status: (rec && rec.status) || 'حاضر',
-                                    detail: (rec && rec.detail) || '',
-                                    arrivalTime: (rec && rec.arrivalTime) || '',
-                                    workStartTime: (rec && rec.workStartTime) || '',
-                                    notes: (rec && rec.notes) || ''
-                                };
-                                db.attendance[dateKey][empKey] = normalizedRec;
-                                db.records[dateKey][empKey] = normalizedRec;
-                            });
-                        }
-                    });
-
-                    // 4. حفظ كامل في التخزين المحلي وقاعدة البيانات
-                    saveToLocalStorage();
-                    if (typeof saveToIndexedDB === 'function') {
-                        try { await saveToIndexedDB(); } catch(err) { console.warn(err); }
-                    }
-
-                    // 5. تحديث كافة شاشات وعناصر الواجهة فوراً
-                    loadSettingsToUI();
-                    updateGenderTerms();
-                    updateAuthScreenUI();
-                    renderEmployeesList();
-                    updatePastDatesDropdown();
-                    try { populateDynamicCalendarDropdowns(); } catch(err) {}
-                    addOrLoadDailyRecord();
-                    renderAttendanceLog();
-                    renderDelaysLog();
+                    await applyImportedDatabase(importedDb);
+                    resetUnsavedChanges();
 
                     showAppToast("✅ تم استرجاع النسخة الاحتياطية بنجاح وتحديث كافة البيانات في النظام!", "success", 4500);
                 } catch(err) {
@@ -8692,6 +9075,30 @@ body {
             }
         })();
     </script>
+
+<!-- نافذة تنبيه درع الحماية السريع (Quick Backup Guard Prompt) -->
+    <div id="quickBackupPromptModal" class="no-print hidden fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-50 bg-slate-900 text-white border-2 border-amber-500/80 rounded-2xl p-4 shadow-2xl backdrop-blur">
+        <div class="flex items-start justify-between gap-2">
+            <div class="flex items-start gap-2.5">
+                <span class="text-2xl shrink-0">🛡️</span>
+                <div>
+                    <h4 class="font-bold text-sm text-amber-400">درع حماية البيانات الدائم</h4>
+                    <p class="text-xs text-slate-300 mt-0.5 leading-relaxed">
+                        لديك <span id="unsavedCountBadge" class="font-bold text-amber-300">10</span> تعديلات جديدة. يُنصح بحفظ نسخة سريعة في ملفات الآيفون أو السحابة لمنع فقدان البيانات.
+                    </p>
+                </div>
+            </div>
+            <button type="button" onclick="dismissQuickBackupPrompt()" class="text-slate-400 hover:text-white text-base">✕</button>
+        </div>
+        <div class="mt-3 flex gap-2">
+            <button type="button" onclick="quickBackupGuard(true)" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5 shadow-md">
+                <span>💾</span> <span>حفظ نسخة في ملفات الآيفون / iCloud</span>
+            </button>
+            <button type="button" onclick="dismissQuickBackupPrompt()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-2 px-3 rounded-xl transition font-medium">
+                لاحقاً
+            </button>
+        </div>
+    </div>
 
 </body>
 </html>
