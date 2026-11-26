@@ -1,9 +1,9 @@
 /**
  * Service Worker for سجل حضور وغياب الموظفين الاحترافي (sjel-mobile)
- * الإصدار: v2.2
+ * الإصدار: v2.3
  */
 
-const CACHE_NAME = 'sjel-v2.2';
+const CACHE_NAME = 'sjel-v2.3';
 
 const PRECACHE_ASSETS = [
     './',
@@ -64,6 +64,16 @@ self.addEventListener('fetch', (event) => {
     // استبعاد الطلبات غير المدعومة مثل POST أو بروتوكولات أخرى
     if (request.method !== 'GET') return;
     if (request.url.startsWith('chrome-extension://')) return;
+
+    const reqUrl = new URL(request.url);
+
+    // استثناء روابط Firebase و Firestore ومكتبات المزامنة السحابية من التخزين المؤقت لضمان المزامنة الحية دائماً
+    if (reqUrl.hostname.includes('firestore.googleapis.com') ||
+        reqUrl.hostname.includes('firebase.googleapis.com') ||
+        reqUrl.hostname.includes('gstatic.com') ||
+        reqUrl.pathname.includes('/firebasejs/')) {
+        return; // ترك الطلب يمر مباشرة إلى شبكة الإنترنت دون اعتراض الكاش
+    }
 
     const url = new URL(request.url);
     const isNavigation = request.mode === 'navigate';

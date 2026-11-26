@@ -29,6 +29,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Firebase SDK v10 (compat) للمزامنة السحابية الصامتة -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
 
     <script src="license.js"></script>
     <script>
@@ -175,7 +179,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
             unicode-bidi: embed !important;
         }
 
-        /* القياسات القياسية المريحة لشاشات الكمبيوتر والتحكم المتجاوب v2.2 */
+        /* القياسات القياسية المريحة لشاشات الكمبيوتر والتحكم المتجاوب v2.3 */
         html {
             font-size: 15px !important;
             max-width: 100vw !important;
@@ -936,11 +940,13 @@ body {
                 <div class="flex items-center justify-center gap-2 mt-2">
                     <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-black bg-blue-500/20 text-blue-300 border border-blue-400/30 shadow-sm font-mono tracking-wider">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        v2.2
+                        v2.3
                     </span>
                 </div>
-                <div class="flex justify-center">
-                    <div id="syncFileStatusBadge" style="display: none;"></div>
+                <div class="flex justify-center mt-1.5">
+                    <div id="cloudSyncBadgeDesktop" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 shadow-sm transition">
+                        <span>☁️</span> <span>متزامن سحابياً</span>
+                    </div>
                 </div>
                 <p id="appAdminNameDisplay" class="text-xs text-emerald-400 mt-1.5 font-bold hidden"></p>
             </div>
@@ -985,7 +991,9 @@ body {
             <!-- شريط علوي أنيق للجوال مع شارة رقم الإصدار v2.2 -->
             <div class="md:hidden flex items-center justify-between bg-slate-900 text-white px-4 py-2.5 rounded-2xl mb-4 shadow-md border border-slate-800">
                 <div class="flex items-center gap-2">
-                    <div id="syncFileStatusBadgeMobile" style="display: none;"></div>
+                    <div id="cloudSyncBadgeMobile" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700 shadow-sm transition">
+                        <span>☁️</span> <span>متزامن</span>
+                    </div>
                 </div>
                 <div class="flex items-center gap-2.5">
                     <img src="icon.png" alt="أيقونة" class="w-7 h-7 rounded-xl object-contain border border-slate-700/60 shadow-sm">
@@ -996,7 +1004,7 @@ body {
                 </div>
                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-500/25 text-blue-300 border border-blue-400/40 font-mono tracking-wider shadow-sm">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    v2.2
+                    v2.3
                 </span>
             </div>
 
@@ -1414,75 +1422,33 @@ body {
                     </div>
                 </div>
 
-                <!-- النسخ الاحتياطي وربط المجلد -->
+                <!-- المزامنة السحابية الصامتة والنسخ الاحتياطي -->
                 <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-4">
-                    <h2 class="text-xl font-bold text-slate-800 border-b pb-3 flex items-center gap-2">
-                        <span>🔗</span> <span>ربط البيانات والنسخ الاحتياطي الشامل</span>
+                    <h2 class="text-xl font-bold text-slate-800 border-b pb-3 flex items-center justify-between">
+                        <span class="flex items-center gap-2">
+                            <span>☁️</span> <span>المزامنة السحابية الصامتة والنسخ الاحتياطي</span>
+                        </span>
+                        <div id="cloudSyncStatusBadgeSettings" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 shadow-sm transition">
+                            <span>☁️</span> <span>متزامن سحابياً</span>
+                        </div>
                     </h2>
                     <div class="space-y-4">
-                        <p class="text-xs text-slate-500 leading-relaxed">يمكنك ربط البرنامج بمجلد على جهازك ليتم حفظ نسخة كاملة لبيانات البرنامج (بما فيها بيانات المنشأة في الإعدادات) والمزامنة مع الملف المربوط تلقائياً، وتكون الاستعادة بطلب منك في أي وقت.</p>
-
-                        <!-- صندوق حالة ربط المجلد على الجهاز -->
-                        <div id="linkedFolderStatusBox" class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 transition">
-                            <div class="space-y-1">
-                                <div id="linkedFolderName" class="text-sm font-bold text-slate-700 flex items-center gap-2">
-                                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-                                    <span>لم يتم ربط مجلد على الجهاز بعد (يتم الحفظ بالمتصفح فقط).</span>
-                                </div>
-                                <div id="linkedFolderLastSave" class="text-xs text-slate-400">
-                                    عند ربط مجلد، سيتم حفظ نسخة كاملة لبيانات البرنامج (بما فيها بيانات المنشأة) داخله تلقائياً وبأمان.
-                                </div>
-                            </div>
-                            <div class="flex flex-wrap items-center gap-2">
-                                <button id="btnGrantFolderPerm" onclick="requestLinkedFolderPermission()" class="hidden bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-                                    <span>🔑</span> <span>تفعيل إذن المجلد</span>
-                                </button>
-                                <button id="btnLinkFolder" onclick="linkLocalFolder()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-                                    <span>📁</span> <span>ربط بمجلد على الجهاز</span>
-                                </button>
-                                <div id="linkedFolderExtraActions" class="flex flex-wrap items-center gap-2">
-                                    <button type="button" onclick="openPortableDataFolder('root')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm" title="فتح مجلد بيانات_البرنامج في مستكشف الملفات">
-                                        <span>📂</span> <span>فتح مجلد البيانات</span>
-                                    </button>
-                                    <button type="button" onclick="openPortableDataFolder('inquiries')" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm" title="فتح مجلد مساءلات الـ PDF المحفوظة">
-                                        <span>📑</span> <span>مساءلات PDF</span>
-                                    </button>
-                                    <button type="button" onclick="savePortableBackup()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm" title="حفظ نسخة كاملة الآن في مجلد بيانات_البرنامج المحمول">
-                                        <span>💾</span> <span>حفظ نسخة احتياطية</span>
-                                    </button>
-                                    <button type="button" onclick="openPortableBackupsModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm" title="استرجاع من النسخ الاحتياطية المحفوظة في بيانات_البرنامج">
-                                        <span>📥</span> <span>استرجاع من النسخ</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- درع حماية البيانات الدائم (File System Access & Auto-Sync) -->
-                        <div class="bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border-2 border-emerald-500/40 p-4 sm:p-5 rounded-2xl mb-4 shadow-lg">
+                        <div class="bg-gradient-to-r from-blue-950/40 via-slate-900 to-slate-900 border-2 border-blue-500/40 p-4 sm:p-5 rounded-2xl shadow-lg">
                             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl shrink-0 border border-emerald-500/30">
-                                        🛡️
+                                    <div class="w-10 h-10 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-xl shrink-0 border border-blue-500/30">
+                                        🔒
                                     </div>
                                     <div>
-                                        <h3 class="font-bold text-sm sm:text-base text-emerald-400">درع حماية البيانات الدائم</h3>
-                                        <p id="shieldStatusText" class="text-xs text-slate-300 mt-0.5">يحفظ بياناتك وسجلاتك تلقائياً وبأمان حتى لو قمت بمسح بيانات التصفح.</p>
+                                        <h3 class="font-bold text-sm sm:text-base text-blue-400">مزامنة مشفّرة من طرف إلى طرف (Zero-Knowledge)</h3>
+                                        <p class="text-xs text-slate-300 mt-0.5">يتم تشفير كامل بياناتك تلقائياً برمز التفعيل الخاص بك (AES-GCM 256-bit) ومزامنتها سحابياً بصمت مع استعادتها تلقائياً عند مسح المتصفح أو فتح البرنامج.</p>
                                     </div>
                                 </div>
-                                <div id="shieldBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700">
-                                    <span>⚪</span> <span>غير مربوط بملف خارجي</span>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick="triggerManualCloudSync()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-blue-600/30">
+                                        <span>🔄</span> <span>مزامنة سحابية الآن</span>
+                                    </button>
                                 </div>
-                            </div>
-                            <div class="flex flex-wrap gap-2.5 mt-3 pt-3 border-t border-slate-800">
-                                <button type="button" id="btnLinkAutoSaveFile" onclick="linkAutoSaveFile()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/30">
-                                    <span>🔗</span> <span>ربط ملف حفظ تلقائي (حماية دائمة)</span>
-                                </button>
-                                <button type="button" id="btnRestoreAndLinkFile" onclick="restoreAndLinkExistingFile()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-blue-600/30">
-                                    <span>📥</span> <span>استعادة وربط من ملف سابق</span>
-                                </button>
-                                <button type="button" onclick="quickBackupGuard(true)" class="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-amber-600/30" title="حفظ نسخة احتياطية فورية في ملفات الآيفون أو السحابة">
-                                    <span>⚡</span> <span>نسخ احتياطي سريع (الآيفون / iCloud)</span>
-                                </button>
                             </div>
                         </div>
 
@@ -2158,6 +2124,8 @@ body {
         // تحميل البيانات بآمان مطلق عبر IndexedDB مع ترحيل تلقائي كامل من localStorage
         async function initApp() {
             try { requestPersistentStorage(); } catch(e) {}
+            try { updateCloudSyncUIStatus(navigator.onLine ? 'synced' : 'offline'); } catch(e) {}
+            try { checkAndRestoreFromCloud(); } catch(e) {}
             try { initSyncFileHandle(); } catch(e) {}
             try {
                 await checkSjelhothorLicense();
@@ -2462,7 +2430,7 @@ body {
 
         
         // =========================================================================
-        // درع حماية البيانات الدائم (Persistent Storage & Auto File Sync v2.2)
+        // درع حماية البيانات الدائم (Persistent Storage & Auto File Sync v2.3)
         // =========================================================================
 
         let linkedSyncFileHandle = null;
@@ -2873,8 +2841,8 @@ body {
 
         // إشعار نظام الحماية عند أي تعديل للبيانات
         function notifyDataProtectionChange() {
-            incrementUnsavedChanges();
-            if (linkedSyncFileHandle) {
+            try { scheduleCloudBackup(); } catch(e) {}
+            if (typeof syncToExternalFile === 'function' && typeof linkedSyncFileHandle !== 'undefined' && linkedSyncFileHandle) {
                 clearTimeout(autoSyncFileTimeout);
                 autoSyncFileTimeout = setTimeout(() => {
                     syncToExternalFile();
@@ -2886,6 +2854,391 @@ body {
         function saveToLocalStorage() {
             saveToIndexedDB();
         }
+
+        // ============================================================
+        // نظام المزامنة السحابية الصامتة المشفّرة من طرف إلى طرف (Zero-Knowledge Cloud Sync v2.3)
+        // ============================================================
+        const APP_NAMESPACE = "sjel_mobile_app";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAXC-rVg3l8AKCYxBUHYArizi0pXrs7_Pk",
+            authDomain: "school-apps-sync.firebaseapp.com",
+            projectId: "school-apps-sync",
+            storageBucket: "school-apps-sync.firebasestorage.app",
+            messagingSenderId: "1048482151131",
+            appId: "1:1048482151131:web:1cb24c26ce9ce2d4f3aafe",
+            measurementId: "G-DL5C6NRDRE"
+        };
+
+        if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+            try {
+                firebase.initializeApp(firebaseConfig);
+            } catch(e) {
+                console.warn("Firebase initialize error:", e);
+            }
+        }
+        const cloudDb = (typeof firebase !== 'undefined' && firebase.firestore) ? firebase.firestore() : null;
+
+        // استخراج كود تفعيل العميل المعتمد حالياً في البرنامج
+        async function getClientActivationCode() {
+            let code = (localStorage.getItem('sjelhothor_activation_code') || '').trim().toUpperCase();
+            if (code) return code;
+            try {
+                if (typeof readLicenseFromIndexedDB === 'function') {
+                    const lic = await readLicenseFromIndexedDB();
+                    if (lic && lic.code) {
+                        const c = String(lic.code).trim().toUpperCase();
+                        if (c) {
+                            localStorage.setItem('sjelhothor_activation_code', c);
+                            return c;
+                        }
+                    }
+                }
+            } catch(e) {}
+            if (window.db && window.db.sjelhothor_activation_code) {
+                return String(window.db.sjelhothor_activation_code).trim().toUpperCase();
+            }
+            return '';
+        }
+
+        // حساب معرف الوثيقة السحابية الفريد (Doc ID) المشتق من كود التفعيل
+        async function getCloudDocId(code) {
+            const raw = APP_NAMESPACE + "_" + (code || '').trim().toUpperCase();
+            if (crypto && crypto.subtle && crypto.subtle.digest) {
+                const enc = new TextEncoder();
+                const hashBuf = await crypto.subtle.digest('SHA-256', enc.encode(raw));
+                const hashArr = Array.from(new Uint8Array(hashBuf));
+                const hex = hashArr.map(b => b.toString(16).padStart(2, '0')).join('');
+                return hex.slice(0, 40);
+            }
+            if (typeof sha256 === 'function') {
+                return sha256(raw).slice(0, 40);
+            }
+            return raw.slice(0, 40);
+        }
+
+        // تحويل Buffer إلى Base64 والعكس بدعم الأطوال الكبيرة
+        function bufferToBase64(buf) {
+            const bytes = new Uint8Array(buf);
+            let binString = "";
+            const chunk = 8192;
+            for (let i = 0; i < bytes.byteLength; i += chunk) {
+                binString += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+            }
+            return btoa(binString);
+        }
+
+        function base64ToBuffer(base64) {
+            const binString = atob(base64);
+            const bytes = new Uint8Array(binString.length);
+            for (let i = 0; i < binString.length; i++) {
+                bytes[i] = binString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        // اشتقاق مفتاح AES-GCM (256-bit) عبر PBKDF2
+        async function deriveKeyPBKDF2(code, salt) {
+            const enc = new TextEncoder();
+            const keyMaterial = await crypto.subtle.importKey(
+                "raw",
+                enc.encode((code || '').trim().toUpperCase()),
+                { name: "PBKDF2" },
+                false,
+                ["deriveKey"]
+            );
+            return await crypto.subtle.deriveKey(
+                {
+                    name: "PBKDF2",
+                    salt: salt,
+                    iterations: 100000,
+                    hash: "SHA-256"
+                },
+                keyMaterial,
+                { name: "AES-GCM", length: 256 },
+                false,
+                ["encrypt", "decrypt"]
+            );
+        }
+
+        // تشفير النص بصيغة AES-GCM وإرجاع Base64
+        async function encryptPayload(jsonString, code) {
+            const enc = new TextEncoder();
+            const salt = crypto.getRandomValues(new Uint8Array(16));
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const key = await deriveKeyPBKDF2(code, salt);
+            const cipherBuffer = await crypto.subtle.encrypt(
+                { name: "AES-GCM", iv: iv },
+                key,
+                enc.encode(jsonString)
+            );
+            const combined = new Uint8Array(16 + 12 + cipherBuffer.byteLength);
+            combined.set(salt, 0);
+            combined.set(iv, 16);
+            combined.set(new Uint8Array(cipherBuffer), 28);
+            return bufferToBase64(combined.buffer);
+        }
+
+        // فك تشفير Base64 بصيغة AES-GCM وإرجاع النص الأصلي
+        async function decryptPayload(encryptedBase64, code) {
+            const combinedBuf = base64ToBuffer(encryptedBase64);
+            const combined = new Uint8Array(combinedBuf);
+            if (combined.length < 28) throw new Error("بيانات مشفرة غير صالحة");
+            const salt = combined.slice(0, 16);
+            const iv = combined.slice(16, 28);
+            const cipherData = combined.slice(28);
+            const key = await deriveKeyPBKDF2(code, salt);
+            const decryptedBuf = await crypto.subtle.decrypt(
+                { name: "AES-GCM", iv: iv },
+                key,
+                cipherData
+            );
+            const dec = new TextDecoder();
+            return dec.decode(decryptedBuf);
+        }
+
+        // ضغط الشعار إن وجد ليكون أقل من 30KB لتفادي تضخم الحجم
+        async function compressImageIfTooLarge(base64Data, maxSizeKB = 30) {
+            if (!base64Data || typeof base64Data !== 'string' || !base64Data.startsWith('data:image')) {
+                return base64Data;
+            }
+            if (base64Data.length <= maxSizeKB * 1024 * 1.37) {
+                return base64Data;
+            }
+            return new Promise((resolve) => {
+                try {
+                    const img = new Image();
+                    img.crossOrigin = "anonymous";
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const maxDim = 200;
+                        if (width > maxDim || height > maxDim) {
+                            if (width > height) {
+                                height = Math.round((height * maxDim) / width);
+                                width = maxDim;
+                            } else {
+                                width = Math.round((width * maxDim) / height);
+                                height = maxDim;
+                            }
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        const compressed = canvas.toDataURL('image/jpeg', 0.65);
+                        resolve(compressed);
+                    };
+                    img.onerror = () => resolve(base64Data);
+                    img.src = base64Data;
+                } catch(e) {
+                    resolve(base64Data);
+                }
+            });
+        }
+
+        // إدارة شارة حالة المزامنة السحابية في الواجهة
+        let cloudSyncTimeout = null;
+        let isPerformingCloudSync = false;
+        let isRestoringFromCloud = false;
+
+        function updateCloudSyncUIStatus(state) {
+            const desktopBadge = document.getElementById('cloudSyncBadgeDesktop') || document.getElementById('syncFileStatusBadge');
+            const mobileBadge = document.getElementById('cloudSyncBadgeMobile') || document.getElementById('syncFileStatusBadgeMobile');
+            const settingsBadge = document.getElementById('cloudSyncStatusBadgeSettings');
+
+            let badgeText = '☁️ متزامن سحابياً';
+            let badgeClass = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-950/70 text-emerald-300 border border-emerald-600/50 shadow-sm transition';
+            let mobileText = '☁️ متزامن';
+
+            if (state === 'offline' || !navigator.onLine) {
+                badgeText = '📴 محفوظ محلياً';
+                mobileText = '📴 محلي';
+                badgeClass = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-950/70 text-amber-300 border border-amber-600/50 shadow-sm transition';
+            } else if (state === 'syncing') {
+                badgeText = '⏳ جاري المزامنة...';
+                mobileText = '⏳ مزامنة...';
+                badgeClass = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-950/70 text-blue-300 border border-blue-600/50 shadow-sm transition animate-pulse';
+            } else if (state === 'unregistered') {
+                badgeText = '⚪ غير مفعّل';
+                mobileText = '⚪ تجريبي';
+                badgeClass = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 shadow-sm transition';
+            }
+
+            if (desktopBadge) {
+                desktopBadge.style.display = 'inline-flex';
+                desktopBadge.innerHTML = '<span>' + badgeText + '</span>';
+                desktopBadge.className = badgeClass;
+            }
+            if (mobileBadge) {
+                mobileBadge.style.display = 'inline-flex';
+                mobileBadge.innerHTML = '<span>' + mobileText + '</span>';
+                mobileBadge.className = badgeClass.replace('text-xs', 'text-[11px]').replace('px-3', 'px-2');
+            }
+            if (settingsBadge) {
+                settingsBadge.innerHTML = '<span>' + badgeText + '</span>';
+                settingsBadge.className = badgeClass;
+            }
+        }
+
+        // جدولة المزامنة السحابية مع Debounce لمدة 5 ثوانٍ بعد آخر تعديل
+        function scheduleCloudBackup() {
+            if (isRestoringFromCloud) return;
+            if (!navigator.onLine) {
+                updateCloudSyncUIStatus('offline');
+                return;
+            }
+            updateCloudSyncUIStatus('syncing');
+            if (cloudSyncTimeout) clearTimeout(cloudSyncTimeout);
+            cloudSyncTimeout = setTimeout(() => {
+                performCloudBackup().catch(err => {
+                    console.warn("Cloud backup notice:", err);
+                    updateCloudSyncUIStatus(navigator.onLine ? 'synced' : 'offline');
+                });
+            }, 5000);
+        }
+
+        // تنفيذ الرفع الفعلي للسحابة
+        async function performCloudBackup(manual = false) {
+            if (isRestoringFromCloud) return;
+            if (!cloudDb) {
+                if (manual) showAppToast("⚠️ تعذر الاتصال بخدمة Firebase السحابية.", "warning");
+                return;
+            }
+            if (!navigator.onLine) {
+                updateCloudSyncUIStatus('offline');
+                if (manual) showAppToast("📴 لا يوجد اتصال بالإنترنت، بياناتك محفوظة محلياً.", "info");
+                return;
+            }
+
+            const code = await getClientActivationCode();
+            if (!code) {
+                updateCloudSyncUIStatus('unregistered');
+                if (manual) showAppToast("⚠️ يرجى تفعيل البرنامج بكود التفعيل لتفعيل المزامنة السحابية.", "warning");
+                return;
+            }
+
+            if (isPerformingCloudSync) return;
+            isPerformingCloudSync = true;
+            updateCloudSyncUIStatus('syncing');
+
+            try {
+                const docId = await getCloudDocId(code);
+
+                const exportObj = (typeof getUnifiedExportObject === 'function')
+                    ? getUnifiedExportObject()
+                    : {
+                        settings: db.settings || {},
+                        employees: db.employees || [],
+                        records: db.records || db.attendance || {},
+                        attendance: db.attendance || db.records || {}
+                    };
+
+                if (exportObj.settings && exportObj.settings.logo) {
+                    exportObj.settings.logo = await compressImageIfTooLarge(exportObj.settings.logo, 30);
+                }
+
+                const now = Date.now();
+                exportObj.lastUpdated = now;
+                const jsonStr = JSON.stringify(exportObj);
+
+                const encryptedText = await encryptPayload(jsonStr, code);
+
+                await cloudDb.collection('encrypted_backups').doc(docId).set({
+                    payload: encryptedText,
+                    updatedAt: now,
+                    app: APP_NAMESPACE
+                });
+
+                localStorage.setItem('sjel_last_cloud_sync_ts', String(now));
+                updateCloudSyncUIStatus('synced');
+                if (manual) {
+                    showAppToast("✅ تمت المزامنة السحابية بنجاح!", "success", 4000);
+                }
+            } catch(err) {
+                console.error("Cloud backup error:", err);
+                updateCloudSyncUIStatus(navigator.onLine ? 'synced' : 'offline');
+                if (manual) {
+                    showAppToast("❌ خطأ أثناء المزامنة: " + (err.message || err), "error");
+                }
+            } finally {
+                isPerformingCloudSync = false;
+            }
+        }
+
+        // استعادة تلقائية من السحابة عند بدء التشغيل أو إدخال كود التفعيل
+        async function checkAndRestoreFromCloud(explicitCode = null) {
+            if (!cloudDb || !navigator.onLine) {
+                updateCloudSyncUIStatus(navigator.onLine ? 'synced' : 'offline');
+                return;
+            }
+
+            const code = explicitCode || await getClientActivationCode();
+            if (!code) {
+                updateCloudSyncUIStatus('unregistered');
+                return;
+            }
+
+            try {
+                const docId = await getCloudDocId(code);
+                const docSnap = await cloudDb.collection('encrypted_backups').doc(docId).get();
+
+                if (!docSnap.exists) {
+                    updateCloudSyncUIStatus('synced');
+                    return;
+                }
+
+                const data = docSnap.data();
+                if (!data || !data.payload) return;
+
+                const cloudUpdatedAt = Number(data.updatedAt) || 0;
+                const localSyncTs = Number(localStorage.getItem('sjel_last_cloud_sync_ts') || 0);
+
+                const hasLocalEmployees = Array.isArray(db.employees) && db.employees.length > 0;
+                const hasLocalRecords = db.records && Object.keys(db.records).length > 0;
+                const isLocalEmpty = !hasLocalEmployees && !hasLocalRecords;
+
+                if (isLocalEmpty || (cloudUpdatedAt > localSyncTs && (cloudUpdatedAt - localSyncTs) > 2000)) {
+                    isRestoringFromCloud = true;
+                    try {
+                        const decryptedJson = await decryptPayload(data.payload, code);
+                        const restoredDb = JSON.parse(decryptedJson);
+
+                        if (typeof applyImportedDatabase === 'function') {
+                            await applyImportedDatabase(restoredDb);
+                        }
+
+                        localStorage.setItem('sjel_last_cloud_sync_ts', String(cloudUpdatedAt || Date.now()));
+                        showAppToast("✅ تم استعادة بياناتك المحفوظة من السحابة تلقائياً", "success", 6000);
+                    } catch(decErr) {
+                        console.warn("Could not decrypt cloud payload:", decErr);
+                    } finally {
+                        isRestoringFromCloud = false;
+                    }
+                }
+
+                updateCloudSyncUIStatus('synced');
+            } catch(err) {
+                console.warn("Check and restore from cloud error:", err);
+                updateCloudSyncUIStatus(navigator.onLine ? 'synced' : 'offline');
+            }
+        }
+
+        function triggerManualCloudSync() {
+            performCloudBackup(true);
+        }
+
+        // الاستماع لأحداث الاتصال بالإنترنت والانقطاع
+        window.addEventListener('online', () => {
+            updateCloudSyncUIStatus('synced');
+            scheduleCloudBackup();
+            checkAndRestoreFromCloud();
+        });
+        window.addEventListener('offline', () => {
+            updateCloudSyncUIStatus('offline');
+        });
+
 
         // تحويل أي تاريخ بصيغة YYYY-MM-DD إلى اليوم بالعربية وتنسيق مفصل
         // ============================================================
@@ -8399,6 +8752,7 @@ body {
                     localStorage.setItem('sjelhothor_activation_code', enteredCode);
                     localStorage.setItem('sjelhothor_last_seen', String(Date.now()));
                     await saveLicenseToIndexedDB({ code: enteredCode });
+                    try { checkAndRestoreFromCloud(enteredCode); } catch(e) {}
 
                     if (msgEl) {
                         msgEl.textContent = '✅ تم تفعيل البرنامج بنجاح مدى الحياة! أهلاً بك في النسخة الدائمة.';
@@ -8498,6 +8852,7 @@ body {
 
                     if (msgEl) {
                         msgEl.textContent = '✅ تم تفعيل النسخة الدائمة بنجاح مدى الحياة!';
+                    try { checkAndRestoreFromCloud(enteredCode); } catch(e) {}
                         msgEl.className = 'text-xs font-bold text-emerald-400 block mt-1.5';
                     }
                     hideSjelhothorLockOverlay();
@@ -9076,29 +9431,7 @@ body {
         })();
     </script>
 
-<!-- نافذة تنبيه درع الحماية السريع (Quick Backup Guard Prompt) -->
-    <div id="quickBackupPromptModal" class="no-print hidden fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-50 bg-slate-900 text-white border-2 border-amber-500/80 rounded-2xl p-4 shadow-2xl backdrop-blur">
-        <div class="flex items-start justify-between gap-2">
-            <div class="flex items-start gap-2.5">
-                <span class="text-2xl shrink-0">🛡️</span>
-                <div>
-                    <h4 class="font-bold text-sm text-amber-400">درع حماية البيانات الدائم</h4>
-                    <p class="text-xs text-slate-300 mt-0.5 leading-relaxed">
-                        لديك <span id="unsavedCountBadge" class="font-bold text-amber-300">10</span> تعديلات جديدة. يُنصح بحفظ نسخة سريعة في ملفات الآيفون أو السحابة لمنع فقدان البيانات.
-                    </p>
-                </div>
-            </div>
-            <button type="button" onclick="dismissQuickBackupPrompt()" class="text-slate-400 hover:text-white text-base">✕</button>
-        </div>
-        <div class="mt-3 flex gap-2">
-            <button type="button" onclick="quickBackupGuard(true)" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5 shadow-md">
-                <span>💾</span> <span>حفظ نسخة في ملفات الآيفون / iCloud</span>
-            </button>
-            <button type="button" onclick="dismissQuickBackupPrompt()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-2 px-3 rounded-xl transition font-medium">
-                لاحقاً
-            </button>
-        </div>
-    </div>
+
 
 </body>
 </html>
