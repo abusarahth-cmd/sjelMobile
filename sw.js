@@ -1,9 +1,9 @@
 /**
  * Service Worker for سجل حضور وغياب الموظفين الاحترافي (sjel-mobile)
- * الإصدار: v2.0
+ * الإصدار: v2.1
  */
 
-const CACHE_NAME = 'sjel-v2.0';
+const CACHE_NAME = 'sjel-v2.1';
 
 const PRECACHE_ASSETS = [
     './',
